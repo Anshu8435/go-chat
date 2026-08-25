@@ -4,6 +4,8 @@ import { MdKeyboardArrowUp } from "react-icons/md";
 
 import Gochatimage from "../assets/Gochat.png";
 import { MdOutlineWhatsapp } from "react-icons/md";
+import { Link } from "react-router-dom";
+import GochatIcon  from "../assets/Gochat.png"
 
 const Sideheader = () => {
  const [selectedTheme, setSelectedTheme] = useState("light");
@@ -18,10 +20,10 @@ const Sideheader = () => {
     <>
       <div className="top-0  sticky z-99">
         <div className="w-full h-21 ps-12 text-warning-content  bg-primary flex items-center">
-          <h1 className="font-semibold flex text-2xl items-center font-serif   text-warning-content">
+          {/* <h1 className="font-semibold flex text-2xl items-center font-serif   text-warning-content">
             <MdOutlineWhatsapp className="text-3xl font-extrabold" />
             go.chat
-          </h1>
+          </h1> */}   <img src={GochatIcon} alt="icon" className="w-28 h-22 font-bold" />
           <div className="text-warning-content space-x-11 px-16">
             <nav className="flex  gap-8 text-primary-content space-x-2.5 items-center text-l pt-2">
               <div className="relative inline-block group text-primary-content text-xl font-serif">
@@ -235,7 +237,8 @@ text-xl font-serif
           </div>
 
           <div>
-            <button
+            <Link 
+            to="/login"
               className="
     group
     relative
@@ -251,7 +254,7 @@ text-xl font-serif
             >
               {/* Text */}
               Login
-            </button>
+            </Link>
           </div>
         </div>
       </div>
