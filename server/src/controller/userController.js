@@ -1,16 +1,88 @@
+import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
+import Message from "../models/message.model.js";
 
 export const getUsersForSidebar = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id;
 
     // Fetch all registered users except current user, excluding password
-    const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
+    const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } })
+      .select("-password")
+      .lean();
+
+    if (!filteredUsers || filteredUsers.length === 0) {
+      return res.status(200).json({
+        success: true,
+        users: [],
+      });
+    }
+
+    const userObjectIds = filteredUsers.map((u) => new mongoose.Types.ObjectId(u._id));
+    const loggedInObjectId = new mongoose.Types.ObjectId(loggedInUserId);
+
+    // Fetch the latest message for each contact conversation
+    const latestMessages = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: loggedInObjectId, receiverId: { $in: userObjectIds } },
+            { receiverId: loggedInObjectId, senderId: { $in: userObjectIds } },
+          ],
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", loggedInObjectId] },
+              "$receiverId",
+              "$senderId",
+            ],
+          },
+          lastMessage: { $first: "$message" },
+          lastFileType: { $first: "$fileType" },
+          lastFileName: { $first: "$fileName" },
+          lastMessageAt: { $first: "$createdAt" },
+          lastSenderId: { $first: "$senderId" },
+        },
+      },
+    ]);
+
+    const messageMap = new Map();
+    latestMessages.forEach((m) => {
+      messageMap.set(m._id.toString(), m);
+    });
+
+    const usersWithMetadata = filteredUsers.map((u) => {
+      const msg = messageMap.get(u._id.toString());
+      return {
+        ...u,
+        lastMessage: msg?.lastMessage || "",
+        lastFileType: msg?.lastFileType || "",
+        lastFileName: msg?.lastFileName || "",
+        lastMessageAt: msg?.lastMessageAt || null,
+        lastSenderId: msg?.lastSenderId || null,
+      };
+    });
+
+    // Sort WhatsApp-style: Conversations with the most recent messages on TOP!
+    usersWithMetadata.sort((a, b) => {
+      const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      if (timeA && timeB) return timeB - timeA;
+      if (timeA) return -1;
+      if (timeB) return 1;
+      return (a.fullName || "").localeCompare(b.fullName || "");
+    });
 
     return res.status(200).json({
       success: true,
-      users: filteredUsers,
+      users: usersWithMetadata,
     });
   } catch (error) {
     next(error);
