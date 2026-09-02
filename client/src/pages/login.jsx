@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   KeyRound,
   CheckCircle2,
   X,
@@ -50,6 +51,7 @@ const Login = () => {
   const [fpNewPassword, setFpNewPassword] = useState("");
   const [fpConfirmPassword, setFpConfirmPassword] = useState("");
   const [fpShowPassword, setFpShowPassword] = useState(false);
+  const [fpShowConfirmPassword, setFpShowConfirmPassword] = useState(false);
   const [fpIsSending, setFpIsSending] = useState(false);
   const [fpIsResetting, setFpIsResetting] = useState(false);
   const [fpTimer, setFpTimer] = useState(0);
@@ -168,6 +170,28 @@ const Login = () => {
     }
   };
 
+  const handleVerifyFpOtp = (e) => {
+    if (e) e.preventDefault();
+
+    if (!fpOtp || fpOtp.trim().length < 6) {
+      toast.error("Please enter the complete 6-digit OTP.");
+      return;
+    }
+
+    setFpStep(3);
+  };
+
+  const handleCloseFpModal = () => {
+    setShowForgotPassword(false);
+    setFpStep(1);
+    setFpEmail("");
+    setFpOtp("");
+    setFpNewPassword("");
+    setFpConfirmPassword("");
+    setFpShowPassword(false);
+    setFpShowConfirmPassword(false);
+  };
+
   const handleResetPasswordWithOtp = async (e) => {
     e.preventDefault();
 
@@ -178,6 +202,7 @@ const Login = () => {
 
     if (fpOtp.trim().length < 6) {
       toast.error("Please enter the complete 6-digit OTP.");
+      setFpStep(2);
       return;
     }
 
@@ -195,16 +220,14 @@ const Login = () => {
       setFpIsResetting(true);
       const res = await resetPasswordWithOtp(fpEmail, fpOtp.trim(), fpNewPassword);
       toast.success(res.message || "Password updated successfully!");
-      setShowForgotPassword(false);
-      setFpStep(1);
-      setFpEmail("");
-      setFpOtp("");
-      setFpNewPassword("");
-      setFpConfirmPassword("");
+      handleCloseFpModal();
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || "Failed to reset password. Please verify your OTP.";
       toast.error(errorMsg);
+      if (errorMsg.toLowerCase().includes("otp")) {
+        setFpStep(2);
+      }
     } finally {
       setFpIsResetting(false);
     }
@@ -571,20 +594,24 @@ const Login = () => {
                   <div>
                     <h3 className="text-base font-bold text-[var(--text-main)]">Reset Password</h3>
                     <p className="text-[10px] text-[var(--text-muted)]">
-                      {fpStep === 1 ? "Step 1: Request OTP" : "Step 2: Enter code & new password"}
+                      {fpStep === 1
+                        ? "Step 1: Enter your registered email"
+                        : fpStep === 2
+                        ? "Step 2: Enter 6-digit OTP"
+                        : "Step 3: Set your new password"}
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowForgotPassword(false)}
+                  onClick={handleCloseFpModal}
                   className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {fpStep === 1 ? (
+              {fpStep === 1 && (
                 <form onSubmit={handleSendFpOtp} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-[var(--text-muted)]">
@@ -607,9 +634,18 @@ const Login = () => {
                     {fpIsSending ? "Sending OTP..." : "Send Reset OTP"}
                   </button>
                 </form>
-              ) : (
-                <form onSubmit={handleResetPasswordWithOtp} className="space-y-3.5">
-                  <div className="space-y-1">
+              )}
+
+              {fpStep === 2 && (
+                <form onSubmit={handleVerifyFpOtp} className="space-y-4">
+                  <div className="rounded-xl bg-[var(--bg-surface)] p-3 border border-[var(--border)] text-center">
+                    <p className="text-[11px] text-[var(--text-muted)]">
+                      Verification code sent to{" "}
+                      <span className="font-semibold text-[var(--text-main)]">{fpEmail}</span>
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-[var(--text-muted)]">
                       Enter 6-Digit OTP
                     </label>
@@ -617,13 +653,55 @@ const Login = () => {
                       type="text"
                       maxLength={6}
                       value={fpOtp}
-                      onChange={(e) => setFpOtp(e.target.value)}
+                      onChange={(e) => setFpOtp(e.target.value.replace(/\D/g, ""))}
                       placeholder="123456"
-                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] text-center font-mono font-bold outline-none focus:border-[var(--primary)] transition"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2.5 text-base text-[var(--text-main)] text-center font-mono font-bold tracking-widest outline-none focus:border-[var(--primary)] transition"
+                      autoFocus
                       required
                     />
                   </div>
 
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setFpStep(1)}
+                      className="inline-flex items-center gap-1 text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      Back
+                    </button>
+
+                    <div>
+                      {fpTimer > 0 ? (
+                        <span className="text-[11px] text-[var(--text-muted)]">
+                          Resend in {fpTimer}s
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSendFpOtp}
+                          disabled={fpIsSending}
+                          className="text-[11px] font-semibold text-[var(--primary)] hover:underline"
+                        >
+                          Resend OTP
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={fpOtp.trim().length !== 6}
+                    className="theme-button-primary w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    Continue to Change Password
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+              )}
+
+              {fpStep === 3 && (
+                <form onSubmit={handleResetPasswordWithOtp} className="space-y-3.5">
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-[var(--text-muted)]">
                       New Password
@@ -634,13 +712,14 @@ const Login = () => {
                         value={fpNewPassword}
                         onChange={(e) => setFpNewPassword(e.target.value)}
                         placeholder="At least 6 characters"
-                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition"
+                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition pr-10"
+                        autoFocus
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setFpShowPassword(!fpShowPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)]"
                       >
                         {fpShowPassword ? (
                           <EyeOff className="h-3.5 w-3.5" />
@@ -655,22 +734,56 @@ const Login = () => {
                     <label className="text-xs font-semibold text-[var(--text-muted)]">
                       Confirm New Password
                     </label>
-                    <input
-                      type="password"
-                      value={fpConfirmPassword}
-                      onChange={(e) => setFpConfirmPassword(e.target.value)}
-                      placeholder="Repeat new password"
-                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={fpShowConfirmPassword ? "text" : "password"}
+                        value={fpConfirmPassword}
+                        onChange={(e) => setFpConfirmPassword(e.target.value)}
+                        placeholder="Repeat new password"
+                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition pr-10"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFpShowConfirmPassword(!fpShowConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                      >
+                        {fpShowConfirmPassword ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setFpStep(2)}
+                      className="inline-flex items-center gap-1 text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      Back to OTP
+                    </button>
                   </div>
 
                   <button
                     type="submit"
                     disabled={fpIsResetting}
-                    className="theme-button-primary w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 mt-1"
+                    className="theme-button-primary w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 mt-1 flex items-center justify-center gap-2"
                   >
-                    {fpIsResetting ? "Updating Password..." : "Reset & Save Password"}
+                    {fpIsResetting ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Updating Password...
+                      </>
+                    ) : (
+                      <>
+                        Reset & Save Password
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
