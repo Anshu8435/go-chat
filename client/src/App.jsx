@@ -1,13 +1,16 @@
 import React from "react";
-import Sideheader from "./component/sideheader.jsx";
+
 import Herosection from "./component/herosection.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/login.jsx";
+import Navbar from "./component/navbar.jsx";
+import Register from "./pages/register.jsx";
+import ChatPage from "./pages/chatPage.jsx";
 
 const Home = () => {
   return (
     <>
-      <Sideheader />
+      <Navbar />
       <Herosection />
     </>
   );
@@ -22,6 +25,8 @@ const App = () => {
 
         {/* Login Page */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/chatPage" element={<ChatPage />} />
       </Routes>
     </BrowserRouter>
   );

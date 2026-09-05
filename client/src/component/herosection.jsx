@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Heroimage from "../assets/heroimg.webp";
 import { motion } from "motion/react";
 
 const herosection = () => {
+  const navigate = useNavigate();
   return (
     <>
       <div className="mt-9 ">
@@ -15,12 +17,20 @@ const herosection = () => {
             initial={{ x: "-150vw", opacity: 0 }}
             animate={{ x: "6vw", opacity: 25 }}
             transition={{ duration: 2, ease: "easein" }}
-            className="text-7xl text-white ms-12"
+            className="text-8xl font-bold text-white ms-12"
           >
             Message <br /> privately
           </motion.p>
           <br />
-
+          <motion.button
+            initial={{ x: "100vw", opacity: 0 }}
+            animate={{ x: "80vw", opacity: 25 }}
+            transition={{ duration: 2, ease: "easein" }}
+            className="rounded-xl bg-white px-6 py-3 text-emerald-400 font-medium"
+            onClick={()=>navigate("/chatPage")}
+          >
+            Go to Chat
+          </motion.button>
           <motion.p
             initial={{ x: "-100vw", opacity: 0 }}
             animate={{ x: "1vw", opacity: 25 }}
@@ -40,6 +50,7 @@ const herosection = () => {
             Get Started
           </motion.button>
         </div>
+        <div></div>
       </div>
     </>
   );

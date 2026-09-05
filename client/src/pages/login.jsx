@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState  } from "react";
+import { useNavigate } from "react-router-dom";
 import LoginImage from "../assets/login.svg";
+import Register from "../pages/register";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
+  const  navigate = useNavigate();
+
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -19,6 +24,8 @@ const Login = () => {
     console.log("Login Data:", loginData);
   };
 
+  
+
   return (
     <div className="flex min-h-screen w-full bg-[#232029]">
       {/* LEFT SIDE */}
@@ -28,7 +35,7 @@ const Login = () => {
 
       {/* RIGHT SIDE */}
       <div className="flex w-full items-center justify-center px-6 lg:w-1/2">
-        <div className="w-full max-w-[420px] rounded-[32px] bg-white p-8 shadow-md">
+        <div className="w-full max-w-105 rounded-4xl bg-white p-8 shadow-md">
           {/* HEADING */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[#332F3A]">
@@ -143,8 +150,9 @@ const Login = () => {
           {/* CREATE ACCOUNT */}
           <p className="text-center text-sm text-[#635F69]">
             Don't have an account?{" "}
-            <button type="button" className="font-bold text-[#25D366]">
-              Create account
+            <button type="button" className="font-bold text-[#25D366]" onClick={() => navigate("/register")}>
+             Create an account ?
+          
             </button>
           </p>
         </div>
