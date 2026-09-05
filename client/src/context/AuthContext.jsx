@@ -40,7 +40,7 @@ const getApiBaseUrl = () => {
     return envUrl || "http://localhost:4500";
   }
   if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) return envUrl;
-  return "";
+  return "https://go-chat-9dzp.onrender.com";
 };
 
 const API_BASE_URL = getApiBaseUrl();

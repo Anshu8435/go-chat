@@ -12,7 +12,7 @@ const getSocketUrl = () => {
     return envUrl || "http://localhost:4500";
   }
   if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) return envUrl;
-  return "";
+  return "https://go-chat-9dzp.onrender.com";
 };
 
 const SOCKET_URL = getSocketUrl();
@@ -45,14 +45,16 @@ export const SocketProvider = ({ children }) => {
       socketRef.current.disconnect();
     }
 
+    const currentUserId = String(user?._id || user?.id || "");
+
     const newSocket = io(SOCKET_URL, {
       autoConnect: true,
       transports: ["websocket", "polling"],
-      auth: { token },
-      query: { token },
+      auth: { token, userId: currentUserId },
+      query: { token, userId: currentUserId },
       withCredentials: true,
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
       timeout: 10000,
     });
@@ -61,7 +63,11 @@ export const SocketProvider = ({ children }) => {
     activeTokenRef.current = token;
     setSocket(newSocket);
 
-    const handleGetOnlineUsers = (users) => setOnlineUsers(users);
+    const handleGetOnlineUsers = (users) => {
+      if (Array.isArray(users)) {
+        setOnlineUsers(users.map(String));
+      }
+    };
     newSocket.on("getOnlineUsers", handleGetOnlineUsers);
 
     return () => {
