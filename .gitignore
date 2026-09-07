@@ -28,3 +28,9 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Uploaded chat media
+uploads/*
+!uploads/.gitkeep
+server/uploads/*
+!server/uploads/.gitkeep

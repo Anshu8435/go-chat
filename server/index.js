@@ -15,7 +15,15 @@ import AuthRouter from "./src/router/auth.route.js";
 import PublicRouter from "./src/router/public.route.js";
 import UserRouter from "./src/router/user.route.js";
 import MessageRouter from "./src/router/message.route.js";
+import path from "node:path";
+import fs from "node:fs";
 import { app, server } from "./src/socket/socket.js";
+
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadsDir));
 
 // Middleware - CORS configuration to support local development and deployed Vercel frontends
 const allowedOrigins = [
