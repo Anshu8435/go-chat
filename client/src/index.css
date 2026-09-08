@@ -398,6 +398,7 @@ html[data-theme="obsidian-dark"] {
   position: relative;
   display: flex;
   height: 100vh;
+  height: 100dvh;
   width: 100%;
   overflow: hidden;
   background-color: var(--bg-page);
@@ -418,10 +419,12 @@ html[data-theme="obsidian-dark"] {
   color: var(--text-sidebar, var(--text-main));
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .nexus-sidebar {
     min-width: 0;
     max-width: 100%;
+    width: 100%;
+    border-right: none;
   }
   .nexus-sidebar-header {
     padding: 0.875rem 1rem;
@@ -551,12 +554,13 @@ html[data-theme="obsidian-dark"] {
   background: transparent;
   border: none;
   font-size: 13px;
-  color: var(--text-sidebar, var(--text-main));
+  color: #000000 !important;
+  font-weight: 500;
   outline: none;
 }
 
 .search-shell input::placeholder {
-  color: var(--text-sidebar-muted, var(--text-muted));
+  color: #6b7280;
 }
 
 .sidebar-section-header {
