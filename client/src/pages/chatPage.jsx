@@ -18,8 +18,30 @@ import {
   Palette,
   Pin,
   Settings,
+  X,
+  Image as ImageIcon,
+  Paperclip,
 } from "lucide-react";
 import toast from "react-hot-toast";
+
+const formatLastMessageTime = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  const isThisYear = date.getFullYear() === now.getFullYear();
+  if (isThisYear) {
+    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  }
+  return date.toLocaleDateString([], { month: "numeric", day: "numeric", year: "2-digit" });
+};
 
 const ChatPage = () => {
   const [users, setUsers] = useState([]);
@@ -37,7 +59,7 @@ const ChatPage = () => {
   const [selectedFriend, setSelectedFriend] = useState(null);
 
   const { user, logout } = useAuth();
-  const { onlineUsers } = useSocket();
+  const { socket, onlineUsers } = useSocket();
   const { activeTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -60,6 +82,45 @@ const ChatPage = () => {
     fetchUsers();
   }, []);
 
+  // WhatsApp-style: Reorder conversation list to top on new message
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessageReorder = (newMsg) => {
+      const currentUserId = String(user?._id || user?.id || "");
+      const partnerId =
+        String(newMsg.senderId) === currentUserId
+          ? String(newMsg.receiverId)
+          : String(newMsg.senderId);
+
+      setUsers((prevUsers) => {
+        const partnerIndex = prevUsers.findIndex((u) => String(u._id) === partnerId);
+        if (partnerIndex === -1) return prevUsers;
+
+        const targetUser = {
+          ...prevUsers[partnerIndex],
+          lastMessage: newMsg.message || "",
+          lastFileType: newMsg.fileType || "",
+          lastFileName: newMsg.fileName || "",
+          lastMessageAt: newMsg.createdAt || new Date().toISOString(),
+          lastSenderId: newMsg.senderId,
+        };
+
+        const remainingUsers = prevUsers.filter((u) => String(u._id) !== partnerId);
+        // Place conversation at the very top of the list!
+        return [targetUser, ...remainingUsers];
+      });
+    };
+
+    socket.on("newMessage", handleMessageReorder);
+    socket.on("receive_message", handleMessageReorder);
+
+    return () => {
+      socket.off("newMessage", handleMessageReorder);
+      socket.off("receive_message", handleMessageReorder);
+    };
+  }, [socket, user]);
+
   const handleLogout = async () => {
     await logout();
     toast.success("Logged out successfully");
@@ -81,20 +142,40 @@ const ChatPage = () => {
     });
   };
 
-  const filteredUsersList = users.filter((u) => {
-    const name = u.fullName || u.email || "";
-    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
+  const isUserOnline = (userId) => {
+    return onlineUsers.some((id) => String(id) === String(userId));
+  };
 
-    const isOnline = onlineUsers.includes(u._id);
-    const isPinned = pinnedUserIds.includes(u._id);
+  const filteredUsersList = users
+    .filter((u) => {
+      const name = u.fullName || u.email || "";
+      const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
 
-    if (activeTab === "online") return isOnline;
-    if (activeTab === "pinned") return isPinned;
-    return true;
-  });
+      const online = isUserOnline(u._id);
+      const isPinned = pinnedUserIds.includes(u._id);
 
-  const onlineCount = users.filter((u) => onlineUsers.includes(u._id)).length;
+      if (activeTab === "online") return online;
+      if (activeTab === "pinned") return isPinned;
+      return true;
+    })
+    .sort((a, b) => {
+      // Pinned contacts always stay on top
+      const aPinned = pinnedUserIds.includes(a._id);
+      const bPinned = pinnedUserIds.includes(b._id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      // Within pinned / unpinned, sort by latest message time
+      const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      if (timeA && timeB) return timeB - timeA;
+      if (timeA) return -1;
+      if (timeB) return 1;
+      return (a.fullName || "").localeCompare(b.fullName || "");
+    });
+
+  const onlineCount = users.filter((u) => isUserOnline(u._id)).length;
 
   return (
     <div
@@ -158,14 +239,26 @@ const ChatPage = () => {
 
           {/* Search Bar */}
           <div className="search-shell">
-            <Search className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
+            <Search className="h-4 w-4 text-zinc-500 flex-shrink-0" />
             <input
               type="text"
               placeholder="Search contacts or direct messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search contacts"
+              className="text-black placeholder:text-zinc-500 font-medium"
+              style={{ color: "#000000" }}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="text-zinc-400 hover:text-black p-0.5"
+                title="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Filter Tabs */}
@@ -234,9 +327,10 @@ const ChatPage = () => {
             </div>
           ) : (
             filteredUsersList.map((u) => {
-              const isOnline = onlineUsers.includes(u._id);
+              const online = isUserOnline(u._id);
               const isSelected = selectedFriend?._id === u._id;
               const isPinned = pinnedUserIds.includes(u._id);
+              const isMe = String(u.lastSenderId) === String(user?._id || user?.id);
 
               return (
                 <motion.div
@@ -260,7 +354,7 @@ const ChatPage = () => {
                         u.fullName?.charAt(0).toUpperCase() || "U"
                       )}
                     </div>
-                    <span className={`presence-badge ${isOnline ? "online" : "offline"}`} />
+                    <span className={`presence-badge ${online ? "online" : "offline"}`} />
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -268,27 +362,49 @@ const ChatPage = () => {
                       <h2 className="truncate text-xs font-bold text-[var(--text-sidebar,var(--text-main))]">
                         {u.fullName || "User"}
                       </h2>
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-1.5 flex-shrink-0 text-[10px] text-[var(--text-sidebar-muted,var(--text-muted))]">
+                        {u.lastMessageAt && (
+                          <span className="font-medium">{formatLastMessageTime(u.lastMessageAt)}</span>
+                        )}
                         {isPinned && (
                           <Pin className="h-3 w-3 text-[var(--primary)] fill-[var(--primary)]" />
                         )}
-                        <span className={`status-chip ${isOnline ? "is-online" : ""}`}>
-                          {isOnline ? "Online" : "Offline"}
-                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p className="truncate text-[11px] text-[var(--text-sidebar-muted,var(--text-muted))]">
-                        {u.bio || u.email}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={(e) => togglePin(u._id, e)}
-                        title={isPinned ? "Unpin contact" : "Pin contact to top"}
-                        className="opacity-0 group-hover:opacity-100 hover:text-[var(--primary)] text-[var(--text-sidebar-muted,var(--text-muted))] transition p-1"
-                      >
-                        <Pin className="h-3 w-3" />
-                      </button>
+
+                    <div className="flex items-center justify-between mt-1">
+                      <div className="truncate text-[11px] text-[var(--text-sidebar-muted,var(--text-muted))] flex items-center gap-1 min-w-0 pr-1">
+                        {u.lastFileType === "image" ? (
+                          <span className="inline-flex items-center gap-1 text-[var(--primary)] font-medium">
+                            <ImageIcon className="w-3 h-3" /> Photo
+                          </span>
+                        ) : u.lastFileType === "file" ? (
+                          <span className="inline-flex items-center gap-1 text-[var(--secondary)] font-medium">
+                            <Paperclip className="w-3 h-3" /> {u.lastFileName || "File"}
+                          </span>
+                        ) : u.lastMessage ? (
+                          <span className="truncate">
+                            {isMe ? <span className="font-semibold text-[var(--text-main)]">You: </span> : null}
+                            {u.lastMessage}
+                          </span>
+                        ) : (
+                          <span className="truncate opacity-75">{u.bio || u.email}</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <span className={`status-chip ${online ? "is-online" : ""}`}>
+                          {online ? "Online" : "Offline"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => togglePin(u._id, e)}
+                          title={isPinned ? "Unpin contact" : "Pin contact to top"}
+                          className="opacity-0 group-hover:opacity-100 hover:text-[var(--primary)] text-[var(--text-sidebar-muted,var(--text-muted))] transition p-1"
+                        >
+                          <Pin className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -336,7 +452,11 @@ const ChatPage = () => {
 
             {/* Chat Content */}
             <div className="h-full overflow-hidden">
-              <Chatting selectedFriend={selectedFriend} currentUser={user} />
+              <Chatting
+                selectedFriend={selectedFriend}
+                currentUser={user}
+                onBack={() => setSelectedFriend(null)}
+              />
             </div>
           </div>
         ) : (

@@ -23,6 +23,7 @@ import {
   Download,
   Maximize2,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -54,7 +55,7 @@ const formatBytes = (bytes) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 };
 
-const Chatting = ({ selectedFriend, currentUser }) => {
+const Chatting = ({ selectedFriend, currentUser, onBack }) => {
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [messageText, setMessageText] = useState("");
@@ -77,7 +78,9 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   const { socket, onlineUsers } = useSocket();
   const currentUserId = currentUser?._id || currentUser?.id;
 
-  const isSelectedOnline = selectedFriend?._id ? onlineUsers.includes(selectedFriend._id) : false;
+  const isSelectedOnline = selectedFriend?._id
+    ? onlineUsers.some((id) => String(id) === String(selectedFriend._id))
+    : false;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -329,7 +332,19 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     >
       {/* Chat Header */}
       <div className="nexus-chat-header">
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="md:hidden icon-button h-8 w-8 rounded-lg flex-shrink-0"
+              title="Back to contacts"
+              aria-label="Back to contacts"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          )}
+
           <div className="relative flex-shrink-0">
             <div className="contact-avatar overflow-hidden">
               {selectedFriend.profilePic ? (
