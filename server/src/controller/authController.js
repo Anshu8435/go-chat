@@ -132,6 +132,8 @@ export const SendLoginOtp = async (req, res, next) => {
 
     await Otp.deleteMany({ email: normalizedEmail, type: "login" });
     await Otp.create({ email: normalizedEmail, otp, type: "login" });
+    console.log(`[AUTH-OTP] Generated login OTP for ${normalizedEmail}: ${otp}`);
+
     await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
 
     return res.status(200).json({
@@ -140,8 +142,18 @@ export const SendLoginOtp = async (req, res, next) => {
     });
   } catch (error) {
     console.error("SendLoginOtp error:", error);
+    const isAuthError =
+      error.message?.includes("Invalid login") ||
+      error.message?.includes("535") ||
+      error.message?.includes("Username and Password not accepted");
+
+    const message = isAuthError
+      ? "Email delivery failed: Gmail rejected login credentials. Please check EMAIL_USER and EMAIL_PASS on Render."
+      : `Failed to send OTP: ${error.message || "Email delivery failed"}.`;
+
     return res.status(500).json({
-      message: "Failed to send OTP to your email. Please check your email configuration.",
+      message,
+      error: error.message,
     });
   }
 };
@@ -210,6 +222,8 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
 
     await Otp.deleteMany({ email: normalizedEmail, type: "forgot-password" });
     await Otp.create({ email: normalizedEmail, otp, type: "forgot-password" });
+    console.log(`[AUTH-OTP] Generated forgot-password OTP for ${normalizedEmail}: ${otp}`);
+
     await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
 
     return res.status(200).json({
@@ -218,8 +232,18 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
     });
   } catch (error) {
     console.error("SendForgotPasswordOtp error:", error);
+    const isAuthError =
+      error.message?.includes("Invalid login") ||
+      error.message?.includes("535") ||
+      error.message?.includes("Username and Password not accepted");
+
+    const message = isAuthError
+      ? "Email delivery failed: Gmail rejected login credentials. Please check EMAIL_USER and EMAIL_PASS on Render."
+      : `Failed to send reset code: ${error.message || "Email delivery failed"}.`;
+
     return res.status(500).json({
-      message: "Failed to send reset code. Please try again later.",
+      message,
+      error: error.message,
     });
   }
 };

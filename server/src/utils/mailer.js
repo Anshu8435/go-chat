@@ -1,29 +1,37 @@
 import nodemailer from "nodemailer";
 
-const getTransporter = () => {
+const getCredentials = () => {
   const user =
     process.env.GMAIL_USER ||
     process.env.EMAIL_USER ||
+    process.env.EMAIL_USERNAME ||
     process.env.GMAIL_USERNAME ||
+    process.env.MAIL_USER ||
+    process.env.SMTP_USER ||
     "anshugupta15029@gmail.com";
 
-  const pass =
+  const rawPass =
     process.env.GMAIL_PASSCODE ||
     process.env.EMAIL_PASS ||
     process.env.GMAIL_PASS ||
+    process.env.EMAIL_PASSWORD ||
+    process.env.GMAIL_APP_PASSWORD ||
+    process.env.APP_PASSWORD ||
+    process.env.SMTP_PASS ||
+    process.env.MAIL_PASS ||
     "aaezvcoryxbqfeic";
 
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: user.trim(),
-      pass: pass.trim(),
-    },
-  });
+  // Google displays App Passwords in groups of 4 separated by spaces; remove all whitespace
+  const pass = String(rawPass).replace(/\s+/g, "").trim();
+
+  return {
+    user: user.trim(),
+    pass,
+  };
 };
 
 export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
-  const transporter = getTransporter();
+  const { user, pass } = getCredentials();
   const isLogin = type === "login";
 
   const subject = isLogin
@@ -85,13 +93,55 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     </html>
   `;
 
-  const senderEmail =
-    process.env.GMAIL_USER || process.env.EMAIL_USER || "anshugupta15029@gmail.com";
-
-  return transporter.sendMail({
-    from: `"GoChat" <${senderEmail.trim()}>`,
+  const mailOptions = {
+    from: `"GoChat" <${user}>`,
     to: email.trim(),
     subject,
     html,
-  });
+  };
+
+  // Strategy 1: Direct SSL on port 465 (safest and most reliable on cloud platforms like Render)
+  try {
+    const transporter465 = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: { user, pass },
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 12000,
+      greetingTimeout: 12000,
+      socketTimeout: 15000,
+    });
+    return await transporter465.sendMail(mailOptions);
+  } catch (err465) {
+    console.warn("Direct port 465 SSL failed, trying service: 'gmail'...", err465.message);
+
+    // Strategy 2: service: "gmail"
+    try {
+      const transporterService = nodemailer.createTransport({
+        service: "gmail",
+        auth: { user, pass },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 12000,
+        greetingTimeout: 12000,
+        socketTimeout: 15000,
+      });
+      return await transporterService.sendMail(mailOptions);
+    } catch (errService) {
+      console.warn("Service 'gmail' failed, trying port 587 STARTTLS...", errService.message);
+
+      // Strategy 3: Port 587 STARTTLS
+      const transporter587 = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: { user, pass },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 12000,
+        greetingTimeout: 12000,
+        socketTimeout: 15000,
+      });
+      return await transporter587.sendMail(mailOptions);
+    }
+  }
 };
