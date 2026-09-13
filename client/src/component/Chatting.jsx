@@ -20,6 +20,9 @@ import {
   Sparkles,
   Palette,
   X,
+  Download,
+  Maximize2,
+  Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -43,6 +46,14 @@ const EMOJI_LIST = [
   "🎯",
 ];
 
+const formatBytes = (bytes) => {
+  if (!bytes || Number.isNaN(bytes)) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+};
+
 const Chatting = ({ selectedFriend, currentUser }) => {
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -54,9 +65,12 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [selectedAttachment, setSelectedAttachment] = useState(null);
+  const [viewingImage, setViewingImage] = useState(null);
+  const [isSending, setIsSending] = useState(false);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
   const emojiRef = useRef(null);
   const attachRef = useRef(null);
 
@@ -160,14 +174,19 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
     const textToSend = (messageText || "").trim();
-    const attachmentText = selectedAttachment ? `[Attachment: ${selectedAttachment.name}]` : "";
-    const finalMessage = textToSend
-      ? attachmentText
-        ? `${textToSend} ${attachmentText}`
-        : textToSend
-      : attachmentText;
+    const hasAttachment = Boolean(selectedAttachment?.fileUrl);
 
-    if (!finalMessage || !selectedFriend?._id) return;
+    if (!textToSend && !hasAttachment) return;
+    if (!selectedFriend?._id) return;
+
+    const attachmentPayload = selectedAttachment
+      ? {
+          fileUrl: selectedAttachment.fileUrl,
+          fileType: selectedAttachment.fileType,
+          fileName: selectedAttachment.fileName,
+          fileSize: selectedAttachment.fileSize,
+        }
+      : {};
 
     setMessageText("");
     setSelectedAttachment(null);
@@ -175,8 +194,10 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     setShowAttachMenu(false);
 
     try {
+      setIsSending(true);
       const res = await api.post(`/messages/send/${selectedFriend._id}`, {
-        message: finalMessage,
+        message: textToSend,
+        ...attachmentPayload,
       });
 
       if (res.data?.message) {
@@ -189,6 +210,8 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     } catch (err) {
       console.error("Failed to send message:", err);
       toast.error(err.response?.data?.message || "Failed to send message.");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -207,13 +230,92 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setSelectedAttachment({
-      name: file.name,
-      size: file.size,
-      type,
-    });
+    if (file.size > 12 * 1024 * 1024) {
+      toast.error("File size cannot exceed 12MB.");
+      event.target.value = "";
+      return;
+    }
+
     setShowAttachMenu(false);
-    toast.success(`Attached ${file.name}`);
+
+    const isImage = type === "image" || file.type.startsWith("image/");
+
+    if (isImage) {
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement("canvas");
+            const maxDim = 1280;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+            setSelectedAttachment({
+              fileUrl: compressedDataUrl,
+              fileName: file.name,
+              fileSize: Math.round((compressedDataUrl.length * 3) / 4),
+              fileType: "image",
+              previewUrl: compressedDataUrl,
+            });
+            toast.success(`Photo selected: ${file.name}`);
+          } catch {
+            setSelectedAttachment({
+              fileUrl: loadEvent.target.result,
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: "image",
+              previewUrl: loadEvent.target.result,
+            });
+            toast.success(`Photo selected: ${file.name}`);
+          }
+        };
+        img.onerror = () => {
+          setSelectedAttachment({
+            fileUrl: loadEvent.target.result,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: "image",
+            previewUrl: loadEvent.target.result,
+          });
+          toast.success(`Photo selected: ${file.name}`);
+        };
+        img.src = loadEvent.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        setSelectedAttachment({
+          fileUrl: loadEvent.target.result,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: "file",
+          previewUrl: null,
+        });
+        toast.success(`File attached: ${file.name}`);
+      };
+      reader.readAsDataURL(file);
+    }
+
     event.target.value = "";
   };
 
@@ -352,11 +454,65 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                 className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`relative max-w-[85%] sm:max-w-md rounded-2xl px-4 py-2.5 text-sm transition-all shadow-sm ${
+                  className={`relative max-w-[85%] sm:max-w-md rounded-2xl p-3 text-sm transition-all shadow-sm ${
                     isMe ? "rounded-tr-sm chat-bubble-sent" : "rounded-tl-sm chat-bubble-received"
                   }`}
                 >
-                  <p className="break-words leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                  {/* Image Attachment Rendering */}
+                  {msg.fileUrl && (msg.fileType === "image" || msg.fileUrl.startsWith("data:image/")) && (
+                    <div className="mb-2 overflow-hidden rounded-xl border border-white/10 group relative max-w-sm">
+                      <img
+                        src={msg.fileUrl}
+                        alt={msg.fileName || "Shared photo"}
+                        onClick={() => setViewingImage(msg.fileUrl)}
+                        className="max-h-72 w-auto max-w-full rounded-xl object-contain cursor-pointer hover:opacity-95 transition bg-black/20"
+                        loading="lazy"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setViewingImage(msg.fileUrl)}
+                        className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition shadow-md"
+                        title="View Fullscreen"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Document / File Attachment Rendering */}
+                  {msg.fileUrl && msg.fileType !== "image" && !msg.fileUrl.startsWith("data:image/") && (
+                    <div className="mb-2 flex items-center justify-between gap-3 p-2.5 rounded-xl bg-black/20 border border-white/10">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="p-2 rounded-lg bg-[var(--primary)]/20 text-[var(--primary)] flex-shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 text-left">
+                          <p className="text-xs font-bold truncate max-w-[160px] sm:max-w-[200px]">
+                            {msg.fileName || "Shared File"}
+                          </p>
+                          {msg.fileSize ? (
+                            <p className="text-[10px] opacity-75">{formatBytes(msg.fileSize)}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <a
+                        href={msg.fileUrl}
+                        download={msg.fileName || "download"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-white flex items-center justify-center flex-shrink-0"
+                        title="Download File"
+                      >
+                        <Download className="w-4 h-4" />
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Text Message */}
+                  {msg.message && (
+                    <p className="break-words leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                  )}
+
                   <div
                     className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${
                       isMe ? "opacity-85 text-white" : "text-[var(--text-muted)]"
@@ -376,14 +532,30 @@ const Chatting = ({ selectedFriend, currentUser }) => {
       {/* Selected Attachment Preview Bar */}
       {selectedAttachment && (
         <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-[var(--text-main)]">
-            <Paperclip className="h-4 w-4 text-[var(--primary)]" />
-            <span className="font-semibold truncate max-w-xs">{selectedAttachment.name}</span>
+          <div className="flex items-center gap-3 text-[var(--text-main)] min-w-0">
+            {selectedAttachment.fileType === "image" ? (
+              <img
+                src={selectedAttachment.previewUrl}
+                alt="Preview"
+                className="w-10 h-10 object-cover rounded-lg border border-[var(--border)] flex-shrink-0"
+              />
+            ) : (
+              <div className="p-2 rounded-lg bg-[var(--primary)]/20 text-[var(--primary)] flex-shrink-0">
+                <FileText className="h-5 w-5" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <span className="font-semibold truncate block max-w-xs">{selectedAttachment.fileName}</span>
+              <span className="text-[10px] text-[var(--text-muted)]">
+                {formatBytes(selectedAttachment.fileSize)}
+              </span>
+            </div>
           </div>
           <button
             type="button"
             onClick={() => setSelectedAttachment(null)}
-            className="text-[var(--text-muted)] hover:text-red-400 p-1"
+            className="text-[var(--text-muted)] hover:text-red-400 p-1.5 rounded-lg transition"
+            title="Remove attachment"
           >
             <X className="h-4 w-4" />
           </button>
@@ -393,7 +565,14 @@ const Chatting = ({ selectedFriend, currentUser }) => {
       {/* Message Composer */}
       <div className="message-composer-bar">
         <form onSubmit={handleSendMessage} className="relative flex items-center gap-2">
-          {/* Hidden file input */}
+          {/* Hidden file inputs */}
+          <input
+            type="file"
+            ref={imageInputRef}
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleFileSelection(e, "image")}
+          />
           <input
             type="file"
             ref={fileInputRef}
@@ -407,7 +586,7 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               type="button"
               onClick={() => setShowAttachMenu(!showAttachMenu)}
               className="icon-button"
-              title="Attach File"
+              title="Attach File or Image"
             >
               <Paperclip className="h-4 w-4" />
             </button>
@@ -416,7 +595,10 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               <div className="absolute bottom-full left-0 mb-2 w-48 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-2xl backdrop-blur-xl z-30">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    setShowAttachMenu(false);
+                    imageInputRef.current?.click();
+                  }}
                   className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
                 >
                   <ImageIcon className="h-4 w-4 text-[var(--primary)]" />
@@ -424,7 +606,10 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    setShowAttachMenu(false);
+                    fileInputRef.current?.click();
+                  }}
                   className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
                 >
                   <FileText className="h-4 w-4 text-[var(--secondary)]" />
@@ -478,11 +663,11 @@ const Chatting = ({ selectedFriend, currentUser }) => {
           {/* Send Button */}
           <button
             type="submit"
-            disabled={!messageText.trim() && !selectedAttachment}
+            disabled={(!messageText.trim() && !selectedAttachment) || isSending}
             className="theme-button-primary inline-flex h-10 w-10 items-center justify-center rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
             title="Send Message"
           >
-            <Send className="h-4 w-4" />
+            {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </button>
         </form>
       </div>
@@ -557,6 +742,48 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                   <PhoneOff className="h-5 w-5" />
                 </button>
               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen Image Preview Modal */}
+      <AnimatePresence>
+        {viewingImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setViewingImage(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+          >
+            <div
+              className="relative max-w-4xl max-h-[90vh] flex flex-col items-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute top-2 right-2 flex items-center gap-2 z-10">
+                <a
+                  href={viewingImage}
+                  download="gochat-image.jpg"
+                  className="p-2 rounded-xl bg-black/60 text-white hover:bg-black/80 transition"
+                  title="Download Image"
+                >
+                  <Download className="w-5 h-5" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setViewingImage(null)}
+                  className="p-2 rounded-xl bg-black/60 text-white hover:bg-black/80 transition"
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <img
+                src={viewingImage}
+                alt="Fullscreen View"
+                className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl"
+              />
             </div>
           </motion.div>
         )}
