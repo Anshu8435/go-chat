@@ -26,6 +26,8 @@ const formatUserResponse = (user) => ({
   profilePic: user.profilePic || "",
   bio: user.bio || "",
   loginType: user.loginType,
+  isOnline: Boolean(user.isOnline),
+  lastActive: user.lastActive || new Date(),
 });
 
 export const RegisterUser = async (req, res, next) => {
@@ -60,6 +62,10 @@ export const RegisterUser = async (req, res, next) => {
       profilePic: profilePic || "",
       loginType: "normal_user",
     });
+
+    newUser.isOnline = true;
+    newUser.lastActive = new Date();
+    await newUser.save();
 
     const token = generateToken(newUser._id);
     setTokenCookie(res, token);
@@ -97,6 +103,10 @@ export const LoginUser = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password." });
     }
+
+    user.isOnline = true;
+    user.lastActive = new Date();
+    await user.save();
 
     const token = generateToken(user._id);
     setTokenCookie(res, token);
@@ -183,6 +193,10 @@ export const VerifyLoginOtp = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: "User account not found." });
     }
+
+    user.isOnline = true;
+    user.lastActive = new Date();
+    await user.save();
 
     const token = generateToken(user._id);
     setTokenCookie(res, token);
@@ -343,7 +357,28 @@ export const ForgotPassword = async (req, res, next) => {
   }
 };
 
-export const LogoutrUser = (req, res) => {
+export const LogoutrUser = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token =
+      req.cookies?.token ||
+      (authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null);
+
+    if (token) {
+      const secret = process.env.JWT_SECRET || "gochatapp_jwt_secret_key_2026";
+      try {
+        const decoded = jwt.verify(token, secret);
+        if (decoded?.id) {
+          await User.findByIdAndUpdate(decoded.id, { isOnline: false, lastActive: new Date() }).exec();
+        }
+      } catch {
+        // ignore invalid token on logout
+      }
+    }
+  } catch {
+    // ignore
+  }
+
   res.clearCookie("token");
   return res.status(200).json({ message: "Logged out successfully." });
 };

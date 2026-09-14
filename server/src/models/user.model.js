@@ -42,6 +42,14 @@ const UserSchema = new mongoose.Schema(
       enum: ["normal_user", "google_user", "hybrid_user"],
       default: "normal_user",
     },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    lastActive: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,
