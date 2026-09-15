@@ -1,9 +1,9 @@
-import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 import Herosection from "./component/herosection.jsx";
 import Login from "./pages/login.jsx";
 import Navbar from "./component/navbar.jsx";
@@ -31,9 +31,9 @@ const ProtectedRoute = ({ children }) => {
   if (loading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center theme-shell">
-        <div className="flex flex-col items-center gap-3" style={{ color: "var(--text)" }}>
-          <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--accent-a)" }} />
-          <p className="font-medium theme-muted">Loading NexusChat...</p>
+        <div className="flex flex-col items-center gap-3" style={{ color: "var(--text-main)" }}>
+          <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--primary)" }} />
+          <p className="font-medium text-sm text-[var(--text-muted)]">Loading GoChat...</p>
         </div>
       </div>
     );
@@ -52,9 +52,9 @@ const PublicOnlyRoute = ({ children }) => {
   if (loading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center theme-shell">
-        <div className="flex flex-col items-center gap-3" style={{ color: "var(--text)" }}>
-          <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--accent-b)" }} />
-          <p className="font-medium theme-muted">Loading...</p>
+        <div className="flex flex-col items-center gap-3" style={{ color: "var(--text-main)" }}>
+          <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--secondary)" }} />
+          <p className="font-medium text-sm text-[var(--text-muted)]">Loading...</p>
         </div>
       </div>
     );
@@ -123,37 +123,30 @@ const AppRoutes = () => {
   );
 };
 
-const ThemeManager = () => {
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("gochat-theme") || "dark";
-    document.documentElement.setAttribute("data-theme", savedTheme);
-  }, []);
-
-  return null;
-};
-
 const App = () => {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <ThemeManager />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 3500,
-            style: {
-              background: "#111827",
-              color: "#fff",
-              borderRadius: "12px",
-              border: "1px solid rgba(255,255,255,0.08)",
-            },
-          }}
-        />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </SocketProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 3500,
+              style: {
+                background: "var(--bg-card)",
+                color: "var(--text-main)",
+                borderRadius: "14px",
+                border: "1px solid var(--border)",
+                boxShadow: "0 10px 30px -5px var(--shadow-glow)",
+              },
+            }}
+          />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </SocketProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
