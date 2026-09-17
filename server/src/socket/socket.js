@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import http from "http";
 import express from "express";
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -19,11 +20,17 @@ const io = new Server(server, {
   },
 });
 
-// Map of userId -> socketId
-const userSocketMap = {};
+// Map of userId -> Set of socketIds (supports multiple tabs / devices per user)
+const userSockets = new Map();
 
 export const getReceiverSocketId = (receiverId) => {
-  return userSocketMap[String(receiverId)];
+  const sockets = userSockets.get(String(receiverId));
+  if (!sockets || sockets.size === 0) return null;
+  return Array.from(sockets)[0];
+};
+
+export const getOnlineUsersList = () => {
+  return Array.from(userSockets.keys());
 };
 
 // Middleware to authenticate socket connections via JWT or userId fallback
@@ -72,19 +79,43 @@ io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id} (User: ${userId})`);
 
   if (userId) {
-    userSocketMap[String(userId)] = socket.id;
-    socket.join(`user:${String(userId)}`);
+    const sUserId = String(userId);
+    socket.userId = sUserId;
+    socket.join(`user:${sUserId}`);
+
+    if (!userSockets.has(sUserId)) {
+      userSockets.set(sUserId, new Set());
+    }
+    userSockets.get(sUserId).add(socket.id);
+
+    User.findByIdAndUpdate(sUserId, { isOnline: true, lastActive: new Date() })
+      .exec()
+      .catch(() => {});
   }
 
   // Broadcast list of online user IDs to all clients
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  io.emit("getOnlineUsers", getOnlineUsersList());
+
+  socket.on("requestOnlineUsers", () => {
+    socket.emit("getOnlineUsers", getOnlineUsersList());
+  });
 
   socket.on("disconnect", () => {
     console.log(`Socket disconnected: ${socket.id} (User: ${userId})`);
-    if (userId) {
-      delete userSocketMap[String(userId)];
+    if (socket.userId) {
+      const sUserId = String(socket.userId);
+      const set = userSockets.get(sUserId);
+      if (set) {
+        set.delete(socket.id);
+        if (set.size === 0) {
+          userSockets.delete(sUserId);
+          User.findByIdAndUpdate(sUserId, { isOnline: false, lastActive: new Date() })
+            .exec()
+            .catch(() => {});
+        }
+      }
     }
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    io.emit("getOnlineUsers", getOnlineUsersList());
   });
 });
 

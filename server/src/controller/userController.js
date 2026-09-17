@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
+import { getOnlineUsersList } from "../socket/socket.js";
 
 export const getUsersForSidebar = async (req, res, next) => {
   try {
@@ -58,10 +59,14 @@ export const getUsersForSidebar = async (req, res, next) => {
       messageMap.set(m._id.toString(), m);
     });
 
+    const activeSocketUsers = getOnlineUsersList();
+
     const usersWithMetadata = filteredUsers.map((u) => {
       const msg = messageMap.get(u._id.toString());
+      const isOnline = activeSocketUsers.includes(u._id.toString()) || Boolean(u.isOnline);
       return {
         ...u,
+        isOnline,
         lastMessage: msg?.lastMessage || "",
         lastFileType: msg?.lastFileType || "",
         lastFileName: msg?.lastFileName || "",
