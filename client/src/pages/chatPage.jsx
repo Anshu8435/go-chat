@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Chatting from "../component/Chatting.jsx";
 import { api, useAuth } from "../context/AuthContext.jsx";
 import { useSocket } from "../context/SocketContext.jsx";
+import { useTheme } from "../context/ThemeContext.jsx";
+import ThemeQuickSwitch from "../component/ThemeQuickSwitch.jsx";
 import {
   LogOut,
   User as UserIcon,
@@ -14,6 +16,8 @@ import {
   Users,
   ArrowLeft,
   Palette,
+  Pin,
+  Settings,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -21,9 +25,21 @@ const ChatPage = () => {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all"); // "all" | "online" | "pinned"
+  const [pinnedUserIds, setPinnedUserIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("gochat-pinned");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [selectedFriend, setSelectedFriend] = useState(null);
+
   const { user, logout } = useAuth();
   const { onlineUsers } = useSocket();
+  const { activeTheme } = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -47,42 +63,71 @@ const ChatPage = () => {
   const handleLogout = async () => {
     await logout();
     toast.success("Logged out successfully");
+    navigate("/login");
+  };
+
+  const togglePin = (userId, e) => {
+    e.stopPropagation();
+    setPinnedUserIds((prev) => {
+      const updated = prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId];
+      try {
+        localStorage.setItem("gochat-pinned", JSON.stringify(updated));
+      } catch {
+        // ignore storage error
+      }
+      return updated;
+    });
   };
 
   const filteredUsersList = users.filter((u) => {
     const name = u.fullName || u.email || "";
-    return name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+
+    const isOnline = onlineUsers.includes(u._id);
+    const isPinned = pinnedUserIds.includes(u._id);
+
+    if (activeTab === "online") return isOnline;
+    if (activeTab === "pinned") return isPinned;
+    return true;
   });
+
+  const onlineCount = users.filter((u) => onlineUsers.includes(u._id)).length;
 
   return (
     <div
       className="nexus-chat-shell"
-      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+      style={{
+        backgroundColor: "var(--bg-page)",
+        color: "var(--text-main)",
+      }}
     >
-      <div className="nexus-orb orb-one" />
-      <div className="nexus-orb orb-two" />
-
-      <div className={`nexus-sidebar ${selectedFriend ? "hidden md:flex" : "flex"}`}>
+      {/* Sidebar */}
+      <aside className={`nexus-sidebar ${selectedFriend ? "hidden md:flex" : "flex"}`}>
+        {/* Header */}
         <div className="nexus-sidebar-header">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <Link to="/" className="flex items-center gap-2.5 group">
               <div className="nexus-brand-mark">
                 <MessageSquare className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white tracking-tight">NexusChat</h1>
+                <h1 className="text-base font-extrabold tracking-tight text-[var(--text-sidebar,var(--text-main))] font-heading leading-tight">
+                  GoChat
+                </h1>
                 <span className="nexus-live-status">
                   <span className="nexus-status-dot" />
-                  Aurora sync
+                  Live Workspace
                 </span>
               </div>
-            </div>
+            </Link>
 
-            <div className="flex items-center gap-2">
-              <Link
-                to="/dashboard"
-                className="profile-chip transition hover:border-cyan-400/40 hover:bg-cyan-400/10"
-              >
+            <div className="flex items-center gap-1.5">
+              <ThemeQuickSwitch compact />
+
+              <Link to="/dashboard" className="profile-chip" title="Profile & Settings">
                 <div className="profile-avatar overflow-hidden">
                   {user?.profilePic ? (
                     <img
@@ -94,67 +139,117 @@ const ChatPage = () => {
                     user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="h-3.5 w-3.5" />
                   )}
                 </div>
-                <span className="truncate">{user?.fullName?.split(" ")[0] || "User"}</span>
+                <span className="truncate max-w-[70px]">
+                  {user?.fullName?.split(" ")[0] || "User"}
+                </span>
               </Link>
 
               <button
+                type="button"
                 onClick={handleLogout}
-                title="Logout"
+                title="Sign out"
                 className="icon-button danger"
-                aria-label="Logout"
+                aria-label="Sign out"
               >
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
           </div>
 
+          {/* Search Bar */}
           <div className="search-shell">
-            <Search className="h-4 w-4 text-slate-400" />
+            <Search className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search contacts..."
+              placeholder="Search contacts or direct messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search contacts"
             />
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-[var(--border)]">
+            <button
+              type="button"
+              onClick={() => setActiveTab("all")}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition ${
+                activeTab === "all"
+                  ? "bg-[var(--primary)] text-white shadow-sm"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface)]"
+              }`}
+            >
+              All ({users.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("online")}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition flex items-center gap-1.5 ${
+                activeTab === "online"
+                  ? "bg-[var(--primary)] text-white shadow-sm"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface)]"
+              }`}
+            >
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              Online ({onlineCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("pinned")}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition flex items-center gap-1 ${
+                activeTab === "pinned"
+                  ? "bg-[var(--primary)] text-white shadow-sm"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface)]"
+              }`}
+            >
+              <Pin className="h-3 w-3" />
+              Pinned ({pinnedUserIds.length})
+            </button>
           </div>
         </div>
 
+        {/* Contact List Header */}
         <div className="sidebar-section-header">
           <span className="flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 text-cyan-300" />
+            <Users className="h-3.5 w-3.5 text-[var(--primary)]" />
             Direct Messages
           </span>
-          <span className="count-pill">{filteredUsersList.length} online</span>
+          <span className="count-pill">{filteredUsersList.length} shown</span>
         </div>
 
+        {/* Contacts Container */}
         <div className="sidebar-list">
           {loadingUsers ? (
             <div className="p-8 text-center">
-              <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent" />
-              <p className="text-xs text-slate-400">Loading workspace contacts...</p>
+              <div
+                className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"
+                style={{ borderColor: "var(--primary)", borderTopColor: "transparent" }}
+              />
+              <p className="text-xs text-[var(--text-muted)]">Loading contacts...</p>
             </div>
           ) : filteredUsersList.length === 0 ? (
-            <div className="p-8 text-center text-xs text-slate-400">
-              <Users className="mx-auto mb-2 h-8 w-8 text-slate-600" />
-              <p>No registered contacts found.</p>
+            <div className="p-8 text-center text-xs text-[var(--text-muted)]">
+              <Users className="mx-auto mb-2 h-8 w-8 opacity-40" />
+              <p>No contacts found.</p>
             </div>
           ) : (
             filteredUsersList.map((u) => {
               const isOnline = onlineUsers.includes(u._id);
               const isSelected = selectedFriend?._id === u._id;
+              const isPinned = pinnedUserIds.includes(u._id);
 
               return (
                 <motion.div
                   key={u._id}
                   layout
-                  whileHover={{ x: 4, scale: 1.01 }}
+                  whileHover={{ x: 3 }}
                   onClick={() => setSelectedFriend(u)}
                   className={`contact-card ${isSelected ? "selected" : ""}`}
                 >
                   {isSelected && <div className="contact-accent" />}
 
                   <div className="relative flex-shrink-0">
-                    <div className="contact-avatar gradient-sunset overflow-hidden">
+                    <div className="contact-avatar overflow-hidden">
                       {u.profilePic ? (
                         <img
                           src={u.profilePic}
@@ -169,102 +264,148 @@ const ChatPage = () => {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h2 className="truncate text-sm font-semibold text-white">
+                    <div className="flex items-center justify-between gap-1.5">
+                      <h2 className="truncate text-xs font-bold text-[var(--text-sidebar,var(--text-main))]">
                         {u.fullName || "User"}
                       </h2>
-                      <span className={`status-chip ${isOnline ? "is-online" : ""}`}>
-                        {isOnline ? "Online" : "Offline"}
-                      </span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {isPinned && (
+                          <Pin className="h-3 w-3 text-[var(--primary)] fill-[var(--primary)]" />
+                        )}
+                        <span className={`status-chip ${isOnline ? "is-online" : ""}`}>
+                          {isOnline ? "Online" : "Offline"}
+                        </span>
+                      </div>
                     </div>
-                    <p className="mt-1 truncate text-xs text-slate-400">{u.email}</p>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="truncate text-[11px] text-[var(--text-sidebar-muted,var(--text-muted))]">
+                        {u.bio || u.email}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => togglePin(u._id, e)}
+                        title={isPinned ? "Unpin contact" : "Pin contact to top"}
+                        className="opacity-0 group-hover:opacity-100 hover:text-[var(--primary)] text-[var(--text-sidebar-muted,var(--text-muted))] transition p-1"
+                      >
+                        <Pin className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               );
             })
           )}
         </div>
-      </div>
 
-      <div className={`main-chat-panel ${!selectedFriend ? "hidden md:flex" : "flex"}`}>
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t border-[var(--border)] bg-[var(--bg-sidebar)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+          <Link
+            to="/settings"
+            className="flex items-center gap-1.5 hover:text-[var(--primary)] transition font-medium"
+          >
+            <Palette className="h-3.5 w-3.5" />
+            Theme Studio
+          </Link>
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-1.5 hover:text-[var(--primary)] transition font-medium"
+          >
+            <Settings className="h-3.5 w-3.5" />
+            Settings
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main Chat Workspace */}
+      <main className={`main-chat-panel ${!selectedFriend ? "hidden md:flex" : "flex"}`}>
         {selectedFriend ? (
           <div className="relative flex h-full flex-col">
-            <div className="md:hidden flex items-center gap-2 border-b border-white/10 bg-slate-950/80 p-3">
+            {/* Mobile Back Header */}
+            <div className="md:hidden flex items-center justify-between border-b border-[var(--border)] bg-[var(--header-bg)] p-3">
               <button
+                type="button"
                 onClick={() => setSelectedFriend(null)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)]"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back
+                Back to Contacts
               </button>
+
+              <ThemeQuickSwitch compact />
             </div>
 
-            <div className="flex items-center justify-between border-b border-white/10 bg-slate-950/60 px-4 py-3 backdrop-blur-xl">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF007A] via-[#9B5DE5] to-[#00F0FF] text-lg font-bold text-white shadow-lg shadow-[#ff007a]/20">
-                  {selectedFriend.fullName?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-white">
-                    {selectedFriend.fullName || "User"}
-                  </h2>
-                  <p className="text-[11px] text-emerald-300">Active now</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/settings"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-cyan-400/40 hover:bg-cyan-400/10"
-                >
-                  <Palette className="h-3.5 w-3.5" />
-                  Theme Studio
-                </Link>
-              </div>
-            </div>
-
+            {/* Chat Content */}
             <div className="h-full overflow-hidden">
               <Chatting selectedFriend={selectedFriend} currentUser={user} />
             </div>
           </div>
         ) : (
+          /* Empty State Welcome Screen */
           <div className="empty-state-shell">
-            <div className="nexus-orb orb-three" />
-
-            <div className="relative z-10 max-w-md space-y-6 text-center">
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[32px] border border-cyan-400/20 bg-gradient-to-br from-[#FF007A]/20 to-[#00F0FF]/20 shadow-2xl shadow-cyan-500/10 backdrop-blur-xl">
-                <MessageSquare className="h-12 w-12 text-cyan-300" />
-              </div>
+            <div className="relative z-10 max-w-lg space-y-6 text-center px-4">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-[var(--border)] shadow-2xl backdrop-blur-xl"
+                style={{
+                  background: `linear-gradient(135deg, ${activeTheme.colors.primary}22, ${activeTheme.colors.secondary}22)`,
+                  boxShadow: "0 10px 40px -10px var(--shadow-glow)",
+                }}
+              >
+                <MessageSquare className="h-12 w-12 text-[var(--primary)]" />
+              </motion.div>
 
               <div className="space-y-2">
-                <h2 className="text-3xl font-extrabold text-white">
-                  Welcome to NexusChat,
-                  <span className="block bg-gradient-to-r from-[#FF007A] via-[#A855F7] to-[#00F0FF] bg-clip-text text-transparent">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[var(--primary)]">
+                  <Sparkles className="h-3 w-3" />
+                  Enterprise Messaging
+                </span>
+                <h2 className="text-3xl font-extrabold text-[var(--text-main)] font-heading">
+                  Welcome to GoChat,{" "}
+                  <span
+                    className="bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                    }}
+                  >
                     {user?.fullName || "User"}
                   </span>
                 </h2>
-                <p className="text-sm leading-relaxed text-slate-400">
-                  Select a contact to begin a glow-rich, realtime conversation and experience the
-                  Aurora messaging flow.
+                <p className="text-sm leading-relaxed text-[var(--text-muted)] max-w-md mx-auto">
+                  Select a contact on the left to initiate a secure, encrypted real-time
+                  conversation with zero latency.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-4 text-left">
+              <div className="grid grid-cols-2 gap-3 pt-2 text-left">
                 <div className="nexus-info-card">
-                  <ShieldCheck className="mb-2 h-5 w-5 text-cyan-300" />
-                  <p className="text-xs font-bold text-white">256-bit security</p>
-                  <p className="text-[10px] text-slate-400">Encrypted in transit</p>
+                  <ShieldCheck className="mb-2 h-5 w-5 text-emerald-400" />
+                  <p className="text-xs font-bold text-[var(--text-main)]">256-bit Encrypted</p>
+                  <p className="text-[11px] text-[var(--text-muted)]">Secure in-transit delivery</p>
                 </div>
                 <div className="nexus-info-card">
-                  <Sparkles className="mb-2 h-5 w-5 text-pink-300" />
-                  <p className="text-xs font-bold text-white">Realtime sync</p>
-                  <p className="text-[10px] text-slate-400">Zero-latency feel</p>
+                  <Sparkles className="mb-2 h-5 w-5 text-[var(--primary)]" />
+                  <p className="text-xs font-bold text-[var(--text-main)]">
+                    Seven Enterprise Themes
+                  </p>
+                  <p className="text-[11px] text-[var(--text-muted)]">Fully synced UI styling</p>
                 </div>
+              </div>
+
+              <div className="pt-2">
+                <Link
+                  to="/settings"
+                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-2.5 text-xs font-bold text-[var(--primary)] hover:border-[var(--primary)] transition shadow-sm"
+                >
+                  <Palette className="h-4 w-4" />
+                  Explore Theme Studio
+                </Link>
               </div>
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };
