@@ -1,32 +1,58 @@
 import React, { useState } from "react";
 import { userData } from "../../public/dummy.js";
 import Chatting from "../component/Chatting.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+import { LogOut, User as UserIcon } from "lucide-react";
+import toast from "react-hot-toast";
 
 const ChatPage = () => {
   const [chatPage, setChatPage] = useState(userData);
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [isOpenChat, setIsOpenChat] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success("Logged out successfully");
+  };
 
   return (
-
-  
     <div className="flex h-screen w-full bg-white overflow-hidden">
       {/* ================= LEFT SIDEBAR ================= */}
       <div className=" min-w-[410px] h-full border-r border-gray-200 bg-white flex flex-col">
         {/* ===== HEADER ===== */}
-        <div className="px-[18px] pt-[14px] pb-[10px]">
-          <div className=" flex border-b items-center ">
-            {/* WhatsApp / GoChat */}
-            <span className="text-[22px] font-bold text-green-600   ">
-              GoChat
-            </span>
-             <div className="text-[11px] font-medium text-slate-400 ms-1 mt-2.5 ">
+        <div className="px-[18px] pt-[14px] pb-[10px] border-b border-gray-100 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <span className="text-[22px] font-bold text-green-600">
+                GoChat
+              </span>
+              <div className="text-[11px] font-medium text-slate-400 ms-1 mt-2.5">
                 Connect • Chat • Go
               </div>
+            </div>
 
-           
+            {/* Current User Info & Logout */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-xs">
+                <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-xs">
+                  {user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="w-4 h-4" />}
+                </div>
+                <span className="text-xs font-semibold text-gray-700 max-w-[90px] truncate">
+                  {user?.fullName || "User"}
+                </span>
+              </div>
+              <button
+                onClick={handleLogout}
+                title="Logout"
+                className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
+
 
         {/* ================= FRIEND LIST ================= */}
         <div className="flex-1 overflow-y-auto space-y-2">

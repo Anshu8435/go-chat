@@ -1,20 +1,27 @@
 import React, { useState } from "react";
-
 import { MdKeyboardArrowUp } from "react-icons/md";
-
-import Gochatimage from "../assets/Gochat.png";
-import { MdOutlineWhatsapp } from "react-icons/md";
-import { Link } from "react-router-dom";
-import GochatIcon  from "../assets/Gochat.png"
+import { Link, useNavigate } from "react-router-dom";
+import GochatIcon from "../assets/Gochat.png";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 const navbar = () => {
- const [selectedTheme, setSelectedTheme] = useState("light");
+  const [selectedTheme, setSelectedTheme] = useState("light");
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleThemeChange = (e) => {
     const theme = e.target.value;
     setSelectedTheme(theme);
     document.documentElement.setAttribute("data-theme", theme);
   };
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
+
   
   return (
     <>
@@ -237,25 +244,41 @@ text-xl font-serif
           </div>
 
           <div>
-            <Link 
-            to="/login"
-              className="
-    group
-    relative
-    overflow-hidden
-    rounded-full
-     bg-accent
-    
-    px-9 py-2.5
-    font-medium
-    hover:border-neutral-content hover:text-neutral-content
-    transition-all duration-300
-  "
-            >
-              {/* Text */}
-              Login
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4 me-6">
+                <Link
+                  to="/chatPage"
+                  className="rounded-full bg-accent px-6 py-2.5 font-medium text-black transition-all hover:opacity-90"
+                >
+                  Open Chat
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-full border border-red-500 bg-red-500/10 px-5 py-2 text-sm font-semibold text-red-500 transition-all hover:bg-red-500 hover:text-white"
+                >
+                  Logout ({user?.fullName?.split(" ")[0] || "User"})
+                </button>
+              </div>
+            ) : (
+              <Link 
+                to="/login"
+                className="
+                  group
+                  relative
+                  overflow-hidden
+                  rounded-full
+                  bg-accent
+                  px-9 py-2.5
+                  font-medium
+                  hover:border-neutral-content hover:text-neutral-content
+                  transition-all duration-300
+                "
+              >
+                Login
+              </Link>
+            )}
           </div>
+
         </div>
       </div>
     </>
