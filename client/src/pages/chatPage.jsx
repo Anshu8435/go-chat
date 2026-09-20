@@ -149,7 +149,7 @@ const ChatPage = () => {
       {/* ================= RIGHT CHAT AREA ================= */}
       <div className="flex-1 h-full">
         {selectedFriend ? (
-          <Chatting selectedFriend={selectedFriend} />
+          <Chatting selectedFriend={selectedFriend} currentUser={user?.id || 1} />
         ) : (
           <div className="h-full flex items-center justify-center bg-gray-50">
             <div className="text-center">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { chatData, userData } from "../../public/dummy";
 import {
   Video,
@@ -19,6 +19,13 @@ const Chatting = ({ selectedFriend, currentUser }) => {
 
   const [sender, setSender] = useState(null);
   const [receiver, setReceiver] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  const activeUserId = currentUser || 1;
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // ===============================
   // FIND CURRENT USER + FRIEND
@@ -28,12 +35,12 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     if (!selectedFriend) return;
 
     const currentUserData = userData.find(
-      (user) => user.id == currentUser
-    );
+      (user) => user.id == activeUserId
+    ) || { id: activeUserId, name: "Me" };
 
     const friendData = userData.find(
       (user) => user.id == selectedFriend.id
-    );
+    ) || selectedFriend;
 
     setSender(currentUserData);
     setReceiver(friendData);
@@ -44,28 +51,35 @@ const Chatting = ({ selectedFriend, currentUser }) => {
 
     const chats = chatData.filter(
       (chat) =>
-        (chat.senderId == currentUser &&
+        (chat.senderId == activeUserId &&
           chat.receiverId == selectedFriend.id) ||
-        (chat.receiverId == currentUser &&
+        (chat.receiverId == activeUserId &&
           chat.senderId == selectedFriend.id)
     );
 
     setFilteredChatData(chats);
-  }, [selectedFriend, currentUser]);
+  }, [selectedFriend, activeUserId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [filteredChatData]);
 
   // ===============================
   // SEND MESSAGE UI
   // ===============================
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !selectedFriend) return;
 
-    console.log({
-      senderId: currentUser,
+    const newMsg = {
+      id: Date.now(),
+      senderId: activeUserId,
       receiverId: selectedFriend.id,
-      message: message,
-    });
+      message: message.trim(),
+      timestamp: new Date().toISOString(),
+    };
 
+    setFilteredChatData((prev) => [...prev, newMsg]);
     setMessage("");
   };
 
@@ -221,7 +235,7 @@ const Chatting = ({ selectedFriend, currentUser }) => {
 
           {filteredChatData.map((chat) => {
 
-            const isMe = chat.senderId == currentUser;
+            const isMe = chat.senderId == activeUserId;
 
             return (
               <div
@@ -299,7 +313,7 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               </div>
             );
           })}
-
+          <div ref={messagesEndRef} />
         </div>
 
       </div>
