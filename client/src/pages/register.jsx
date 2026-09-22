@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
+import ThemeQuickSwitch from "../component/ThemeQuickSwitch";
 import toast from "react-hot-toast";
 import {
   Eye,
@@ -9,6 +11,7 @@ import {
   User,
   Mail,
   Lock,
+  Phone,
   MessageSquare,
   ShieldCheck,
   Sparkles,
@@ -19,6 +22,7 @@ import { motion } from "framer-motion";
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { activeTheme } = useTheme();
 
   const [registerData, setRegisterData] = useState({
     fullName: "",
@@ -80,243 +84,251 @@ const Register = () => {
 
   return (
     <div
-      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden font-sans"
-      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden transition-colors duration-200"
+      style={{ backgroundColor: "var(--bg-page)", color: "var(--text-main)" }}
     >
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-teal-500/15 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none" />
+      {/* Ambient background glows */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-          backgroundSize: "36px 36px",
-        }}
+        className="absolute -top-32 -left-32 w-96 h-96 rounded-full blur-[140px] pointer-events-none opacity-40 transition-all duration-700"
+        style={{ backgroundColor: activeTheme.colors.primary }}
+      />
+      <div
+        className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full blur-[140px] pointer-events-none opacity-30 transition-all duration-700"
+        style={{ backgroundColor: activeTheme.colors.secondary }}
       />
 
       <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center">
+        {/* Left Branding Column */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7 }}
-          className="hidden lg:flex lg:col-span-6 flex-col justify-between p-8 space-y-8"
+          transition={{ duration: 0.6 }}
+          className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 space-y-8"
         >
           <Link to="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-              <MessageSquare className="w-6 h-6 text-white" />
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-xl transition-transform group-hover:scale-105"
+              style={{
+                background: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+              }}
+            >
+              <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-emerald-400 bg-clip-text text-transparent font-heading">
+              <span className="text-2xl font-black tracking-tight font-heading text-[var(--text-main)]">
                 GoChat
               </span>
-              <p className="text-xs text-emerald-400/80 font-medium">Next-Gen Messaging</p>
+              <p
+                className="text-xs font-bold uppercase tracking-wider"
+                style={{ color: activeTheme.colors.primary }}
+              >
+                Enterprise Messaging
+              </p>
             </div>
           </Link>
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--primary)] text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Join the Future of Chat</span>
+              <span>Free Instant Onboarding</span>
             </div>
 
-            <h2 className="text-4xl font-extrabold tracking-tight leading-tight font-heading">
+            <h2 className="text-4xl font-black tracking-tight leading-tight font-heading text-[var(--text-main)]">
               Create Your <br />
-              <span className="bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">
-                Encrypted Profile Today
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                }}
+              >
+                Enterprise Profile
               </span>
             </h2>
 
-            <p className="text-slate-400 text-sm leading-relaxed max-w-md">
-              Get instant access to real-time messaging, HD voice/video calls, and absolute data
-              control.
+            <p className="text-sm leading-relaxed text-[var(--text-muted)]">
+              Connect with teammates, clients, and friends in a high-performance messaging workspace
+              designed with Apple-inspired minimalism and Slack-like hierarchy.
             </p>
           </div>
-          <div className="space-y-3 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-3 text-xs text-slate-300">
+
+          <div className="space-y-3 pt-6 border-t border-[var(--border)]">
+            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>End-to-End WebSocket encrypted communications</span>
+              <span>Zero third-party tracking or data profiling</span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <Sparkles className="w-4 h-4 text-teal-400 shrink-0" />
-              <span>Instant account setup in under 30 seconds</span>
+            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
+              <Sparkles className="w-4 h-4 text-[var(--primary)] shrink-0" />
+              <span>Full support for all 7 enterprise visual themes</span>
             </div>
           </div>
         </motion.div>
+
+        {/* Right Form Card */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="lg:col-span-6 w-full max-w-md mx-auto"
+          transition={{ duration: 0.6 }}
+          className="lg:col-span-7 w-full max-w-lg mx-auto"
         >
           <div
-            className="rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-2xl"
+            className="rounded-3xl p-8 sm:p-10 shadow-2xl border border-[var(--border)] bg-[var(--bg-card)] backdrop-blur-2xl"
             style={{
-              background: "var(--bg-panel)",
-              border: "1px solid var(--line)",
-              boxShadow: "0 25px 60px var(--shadow-glow)",
+              boxShadow: "0 20px 50px -10px var(--shadow-glow)",
             }}
           >
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold text-white font-heading">Create Account</h1>
-                <Link
-                  to="/"
-                  className="text-xs text-slate-400 hover:text-emerald-400 transition-colors"
-                >
-                  ← Back to Home
-                </Link>
-              </div>
-              <p className="text-sm text-slate-400">
-                Register to start private messaging on GoChat
-              </p>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="mb-6 flex items-start justify-between">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    name="fullName"
-                    autoComplete="name"
-                    placeholder="Alex Morgan"
-                    value={registerData.fullName}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-12 rounded-2xl pl-12 pr-4 text-sm transition-all shadow-inner theme-input"
-                    style={{ borderColor: "var(--line)" }}
-                  />
+                <h1 className="text-2xl font-black font-heading text-[var(--text-main)]">
+                  Create Account
+                </h1>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  Get started in under 30 seconds
+                </p>
+              </div>
+              <ThemeQuickSwitch compact />
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-3.5">
+              <div className="grid sm:grid-cols-2 gap-3.5">
+                {/* Full Name */}
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-[var(--text-muted)]">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={registerData.fullName}
+                      onChange={handleChange}
+                      placeholder="Jane Doe"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-4 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-[var(--text-muted)]">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={registerData.phone}
+                      onChange={handleChange}
+                      placeholder="+91 9876543210"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-4 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+
+              {/* Email */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-[var(--text-muted)]">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                   <input
                     type="email"
                     name="email"
-                    autoComplete="email"
-                    placeholder="name@example.com"
                     value={registerData.email}
                     onChange={handleChange}
+                    placeholder="name@example.com"
+                    className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-4 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
                     required
-                    className="w-full h-12 rounded-2xl pl-12 pr-4 text-sm transition-all shadow-inner theme-input"
-                    style={{ borderColor: "var(--line)" }}
                   />
                 </div>
               </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  >
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.4 12.4 0 0 0 .7 7.08 2 2 0 0 1 1 9.17l-1.1 3.5a2 2 0 0 0 1.66 2.45l1.77.44a16.4 16.4 0 0 0 9.3 9.3l.44 1.77a2 2 0 0 0 2.45 1.66l3.5-1.1a2 2 0 0 1 2.1 1.36 12.4 12.4 0 0 0 3.28-1.17A2 2 0 0 1 22 16.92Z" />
-                  </svg>
-                  <input
-                    type="tel"
-                    name="phone"
-                    autoComplete="tel"
-                    placeholder="+92 300 1234567"
-                    value={registerData.phone}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-12 rounded-2xl pl-12 pr-4 text-sm transition-all shadow-inner theme-input"
-                    style={{ borderColor: "var(--line)" }}
-                  />
+
+              {/* Passwords */}
+              <div className="grid sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-[var(--text-muted)]">Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={registerData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-10 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-[var(--text-muted)]">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={registerData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-10 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    autoComplete="new-password"
-                    placeholder="Min 6 characters"
-                    value={registerData.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-12 rounded-2xl bg-slate-800/60 border border-white/10 pl-12 pr-12 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    autoComplete="new-password"
-                    placeholder="Re-enter password"
-                    value={registerData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-12 rounded-2xl bg-slate-800/60 border border-white/10 pl-12 pr-12 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
+
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-13 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-base shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-3"
+                className="theme-button-primary w-full py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Creating Account...</span>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Creating account...
                   </>
                 ) : (
                   <>
-                    <span>Create Account</span>
-                    <ArrowRight className="w-5 h-5" />
+                    Complete Registration
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="text-xs text-slate-500 uppercase tracking-widest font-mono">OR</span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
-            <div className="text-center text-sm text-slate-400">
-              Already have an account?{" "}
-              <Link to="/login" className="font-bold text-emerald-400 hover:underline">
-                Sign In
-              </Link>
+
+            <div className="mt-6 pt-6 border-t border-[var(--border)] text-center">
+              <p className="text-xs text-[var(--text-muted)]">
+                Already registered?{" "}
+                <Link to="/login" className="font-bold text-[var(--primary)] hover:underline ml-1">
+                  Sign in instead
+                </Link>
+              </p>
             </div>
           </div>
         </motion.div>

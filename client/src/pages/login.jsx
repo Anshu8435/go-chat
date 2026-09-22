@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
+import ThemeQuickSwitch from "../component/ThemeQuickSwitch";
 import toast from "react-hot-toast";
 import {
   Eye,
@@ -14,6 +16,7 @@ import {
   ArrowRight,
   KeyRound,
   CheckCircle2,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,6 +24,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { login, sendLoginOtp, verifyLoginOtp, sendForgotPasswordOtp, resetPasswordWithOtp } =
     useAuth();
+  const { activeTheme } = useTheme();
+
   const [authMode, setAuthMode] = useState("password");
   const [loginData, setLoginData] = useState({
     email: "",
@@ -28,14 +33,18 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // OTP Login state
   const [otpEmail, setOtpEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpStep, setOtpStep] = useState("request"); // "request" | "verify"
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
+
+  // Forgot password modal state
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [fpStep, setFpStep] = useState(1); // 1: Email, 2: OTP + New Password
+  const [fpStep, setFpStep] = useState(1);
   const [fpEmail, setFpEmail] = useState("");
   const [fpOtp, setFpOtp] = useState("");
   const [fpNewPassword, setFpNewPassword] = useState("");
@@ -44,6 +53,7 @@ const Login = () => {
   const [fpIsSending, setFpIsSending] = useState(false);
   const [fpIsResetting, setFpIsResetting] = useState(false);
   const [fpTimer, setFpTimer] = useState(0);
+
   useEffect(() => {
     let interval = null;
     if (otpTimer > 0) {
@@ -51,6 +61,7 @@ const Login = () => {
     }
     return () => clearInterval(interval);
   }, [otpTimer]);
+
   useEffect(() => {
     let interval = null;
     if (fpTimer > 0) {
@@ -63,6 +74,7 @@ const Login = () => {
     const { name, value } = e.target;
     setLoginData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handlePasswordLoginSubmit = async (e) => {
     e.preventDefault();
 
@@ -84,6 +96,7 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+
   const handleSendLoginOtp = async (e) => {
     if (e) e.preventDefault();
 
@@ -97,7 +110,7 @@ const Login = () => {
       const res = await sendLoginOtp(otpEmail);
       toast.success(res.message || "OTP sent to your email!");
       setOtpStep("verify");
-      setOtpTimer(60); // 60s cooldown
+      setOtpTimer(60);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || "Failed to send OTP. Please check your email.";
@@ -106,6 +119,7 @@ const Login = () => {
       setIsSendingOtp(false);
     }
   };
+
   const handleVerifyLoginOtp = async (e) => {
     e.preventDefault();
 
@@ -131,6 +145,7 @@ const Login = () => {
       setIsVerifyingOtp(false);
     }
   };
+
   const handleSendFpOtp = async (e) => {
     e.preventDefault();
 
@@ -152,6 +167,7 @@ const Login = () => {
       setFpIsSending(false);
     }
   };
+
   const handleResetPasswordWithOtp = async (e) => {
     e.preventDefault();
 
@@ -180,7 +196,6 @@ const Login = () => {
       const res = await resetPasswordWithOtp(fpEmail, fpOtp.trim(), fpNewPassword);
       toast.success(res.message || "Password updated successfully!");
       setShowForgotPassword(false);
-      // Reset form
       setFpStep(1);
       setFpEmail("");
       setFpOtp("");
@@ -197,108 +212,120 @@ const Login = () => {
 
   return (
     <div
-      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden font-sans"
-      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden transition-colors duration-200"
+      style={{ backgroundColor: "var(--bg-page)", color: "var(--text-main)" }}
     >
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none" />
+      {/* Dynamic ambient theme glows */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-          backgroundSize: "36px 36px",
-        }}
+        className="absolute -top-32 -left-32 w-96 h-96 rounded-full blur-[140px] pointer-events-none opacity-40 transition-all duration-700"
+        style={{ backgroundColor: activeTheme.colors.primary }}
+      />
+      <div
+        className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full blur-[140px] pointer-events-none opacity-30 transition-all duration-700"
+        style={{ backgroundColor: activeTheme.colors.secondary }}
       />
 
       <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center">
+        {/* Left Branding Column */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.6 }}
           className="hidden lg:flex lg:col-span-6 flex-col justify-between p-8 space-y-8"
         >
           <Link to="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-              <MessageSquare className="w-6 h-6 text-white" />
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-xl transition-transform group-hover:scale-105"
+              style={{
+                background: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+              }}
+            >
+              <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-emerald-400 bg-clip-text text-transparent font-heading">
+              <span className="text-2xl font-black tracking-tight font-heading text-[var(--text-main)]">
                 GoChat
               </span>
-              <p className="text-xs text-emerald-400/80 font-medium">Next-Gen Messaging</p>
+              <p
+                className="text-xs font-bold uppercase tracking-wider"
+                style={{ color: activeTheme.colors.primary }}
+              >
+                Enterprise Messaging
+              </p>
             </div>
           </Link>
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--primary)] text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Ultra-Secure Chat Suite</span>
+              <span>Enterprise Messaging</span>
             </div>
 
-            <h2 className="text-4xl font-extrabold tracking-tight leading-tight font-heading">
+            <h2 className="text-4xl font-black tracking-tight leading-tight font-heading text-[var(--text-main)]">
               Welcome Back to <br />
-              <span className="bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">
-                Private Digital Spaces
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                }}
+              >
+                Secure Workspace
               </span>
             </h2>
 
-            <p className="text-slate-400 text-sm leading-relaxed max-w-md">
-              Sign in with password or instant OTP verification to resume end-to-end encrypted
-              conversations, voice calls, and real-time socket updates.
+            <p className="text-sm leading-relaxed text-[var(--text-muted)] max-w-md">
+              Sign in with password or instant OTP verification to resume encrypted real-time
+              conversations, voice calls, and direct contact syncing.
             </p>
           </div>
-          <div className="space-y-3 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-3 text-xs text-slate-300">
+
+          <div className="space-y-3 pt-6 border-t border-[var(--border)]">
+            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Zero-knowledge server encryption & privacy guarantee</span>
+              <span>256-bit encrypted message delivery via WebSocket cluster</span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <KeyRound className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
+              <KeyRound className="w-4 h-4 text-[var(--primary)] shrink-0" />
               <span>Instant One-Time Password (OTP) login directly via email</span>
             </div>
           </div>
         </motion.div>
+
+        {/* Right Form Card */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.6 }}
           className="lg:col-span-6 w-full max-w-md mx-auto"
         >
           <div
-            className="rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-2xl"
+            className="rounded-3xl p-8 sm:p-10 shadow-2xl border border-[var(--border)] bg-[var(--bg-card)] backdrop-blur-2xl"
             style={{
-              background: "var(--bg-panel)",
-              border: "1px solid var(--line)",
-              boxShadow: "0 25px 60px var(--shadow-glow)",
+              boxShadow: "0 20px 50px -10px var(--shadow-glow)",
             }}
           >
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h1
-                  className="text-3xl font-bold font-heading"
-                  style={{ color: "var(--text-strong)" }}
-                >
+            {/* Header & Theme Switcher */}
+            <div className="mb-6 flex items-start justify-between">
+              <div>
+                <h1 className="text-2xl font-black font-heading text-[var(--text-main)]">
                   Sign In
                 </h1>
-                <Link
-                  to="/"
-                  className="text-xs text-slate-400 hover:text-emerald-400 transition-colors"
-                >
-                  ← Back to Home
-                </Link>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  Choose your authentication method
+                </p>
               </div>
-              <p className="text-sm text-slate-400">
-                Choose your preferred login method to continue
-              </p>
+              <ThemeQuickSwitch compact />
             </div>
-            <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-900/80 border border-white/10 mb-6">
+
+            {/* Auth Mode Toggle Tabs */}
+            <div className="grid grid-cols-2 p-1.5 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] mb-6">
               <button
                 type="button"
                 onClick={() => setAuthMode("password")}
-                className={`py-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
                   authMode === "password"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/20"
-                    : "text-slate-400 hover:text-white"
+                    ? "theme-button-primary"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <Lock className="w-3.5 h-3.5" />
@@ -307,325 +334,298 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setAuthMode("otp")}
-                className={`py-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
                   authMode === "otp"
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md shadow-cyan-500/20"
-                    : "text-slate-400 hover:text-white"
+                    ? "theme-button-primary"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <KeyRound className="w-3.5 h-3.5" />
                 Email OTP
               </button>
             </div>
+
+            {/* Password Login Form */}
             {authMode === "password" && (
-              <form onSubmit={handlePasswordLoginSubmit} className="space-y-5">
-                <div>
-                  <label className="mb-2 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <form onSubmit={handlePasswordLoginSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[var(--text-muted)]">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                     <input
                       type="email"
                       name="email"
                       autoComplete="email"
-                      placeholder="name@example.com"
                       value={loginData.email}
                       onChange={handlePasswordLoginChange}
+                      placeholder="name@example.com"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-4 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
                       required
-                      className="w-full h-13 rounded-2xl pl-12 pr-4 text-sm transition-all shadow-inner theme-input"
-                      style={{ borderColor: "var(--line)" }}
                     />
                   </div>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-[var(--text-muted)]">
                       Password
                     </label>
                     <button
                       type="button"
-                      onClick={() => {
-                        setShowForgotPassword(true);
-                        setFpStep(1);
-                        if (loginData.email) setFpEmail(loginData.email);
-                      }}
-                      className="text-xs font-medium text-emerald-400 hover:underline"
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-[11px] font-semibold text-[var(--primary)] hover:underline"
                     >
-                      Forgot password?
+                      Forgot?
                     </button>
                   </div>
                   <div className="relative">
-                    <Lock className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                     <input
                       type={showPassword ? "text" : "password"}
                       name="password"
                       autoComplete="current-password"
-                      placeholder="••••••••••••"
                       value={loginData.password}
                       onChange={handlePasswordLoginChange}
+                      placeholder="••••••••"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-10 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
                       required
-                      className="w-full h-13 rounded-2xl pl-12 pr-12 text-sm transition-all shadow-inner theme-input"
-                      style={{ borderColor: "var(--line)" }}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)]"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-13 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-base shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="theme-button-primary w-full py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Authenticating...</span>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Signing in...
                     </>
                   ) : (
                     <>
-                      <span>Sign In to GoChat</span>
-                      <ArrowRight className="w-5 h-5" />
+                      Sign In with Password
+                      <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
               </form>
             )}
+
+            {/* Email OTP Login Form */}
             {authMode === "otp" && (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 {otpStep === "request" ? (
-                  <form onSubmit={handleSendLoginOtp} className="space-y-5">
-                    <div>
-                      <label className="mb-2 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                        Enter Your Registered Email
+                  <form onSubmit={handleSendLoginOtp} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-[var(--text-muted)]">
+                        Your Registered Email
                       </label>
                       <div className="relative">
-                        <Mail className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                         <input
                           type="email"
-                          placeholder="name@example.com"
                           value={otpEmail}
                           onChange={(e) => setOtpEmail(e.target.value)}
+                          placeholder="name@example.com"
+                          className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-4 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition shadow-inner"
                           required
-                          className="w-full h-13 rounded-2xl pl-12 pr-4 text-sm transition-all shadow-inner theme-input"
-                          style={{ borderColor: "var(--line)" }}
                         />
                       </div>
-                      <p className="mt-2 text-xs text-slate-400">
-                        We will send a 6-digit login OTP code to this email address.
-                      </p>
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSendingOtp}
-                      className="w-full h-13 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold text-base shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="theme-button-primary w-full py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isSendingOtp ? (
                         <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Sending Code...</span>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Sending Code...
                         </>
                       ) : (
                         <>
-                          <span>Send Login OTP</span>
-                          <ArrowRight className="w-5 h-5" />
+                          Send One-Time Password
+                          <ArrowRight className="w-4 h-4" />
                         </>
                       )}
                     </button>
                   </form>
                 ) : (
-                  <form onSubmit={handleVerifyLoginOtp} className="space-y-5">
-                    <div className="rounded-2xl bg-cyan-500/10 border border-cyan-500/20 p-3.5 flex items-center justify-between text-xs">
-                      <div className="min-w-0 pr-2">
-                        <p className="text-cyan-300 font-medium">OTP Code sent to:</p>
-                        <p className="text-white font-semibold truncate">{otpEmail}</p>
+                  <form onSubmit={handleVerifyLoginOtp} className="space-y-4">
+                    <div className="p-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between">
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-[var(--text-muted)]">Code sent to:</p>
+                        <p className="text-xs font-bold text-[var(--text-main)] truncate">
+                          {otpEmail}
+                        </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setOtpStep("request")}
-                        className="text-cyan-400 hover:underline font-semibold shrink-0"
+                        className="text-[11px] font-semibold text-[var(--primary)] hover:underline ml-2"
                       >
                         Change
                       </button>
                     </div>
 
-                    <div>
-                      <label className="mb-2 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                        6-Digit Verification Code
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-[var(--text-muted)]">
+                        Enter 6-Digit OTP Code
                       </label>
                       <div className="relative">
-                        <KeyRound className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                         <input
                           type="text"
                           maxLength={6}
-                          placeholder="123456"
                           value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                          onChange={(e) => setOtpCode(e.target.value)}
+                          placeholder="123456"
+                          className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] pl-10 pr-4 py-2.5 text-xs text-[var(--text-main)] tracking-widest text-center font-mono font-bold outline-none focus:border-[var(--primary)] transition"
                           required
-                          autoFocus
-                          className="w-full h-13 rounded-2xl pl-12 pr-4 text-center text-xl tracking-[0.35em] font-mono font-bold transition-all shadow-inner theme-input text-white"
-                          style={{ borderColor: "var(--line)" }}
                         />
                       </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-slate-400">
-                      <span>Didn't receive the email?</span>
-                      <button
-                        type="button"
-                        disabled={otpTimer > 0 || isSendingOtp}
-                        onClick={() => handleSendLoginOtp()}
-                        className="text-cyan-400 hover:underline font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend OTP"}
-                      </button>
                     </div>
 
                     <button
                       type="submit"
                       disabled={isVerifyingOtp}
-                      className="w-full h-13 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-base shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="theme-button-primary w-full py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isVerifyingOtp ? (
                         <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Verifying & Signing In...</span>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Verifying Code...
                         </>
                       ) : (
                         <>
-                          <span>Verify & Sign In</span>
-                          <CheckCircle2 className="w-5 h-5" />
+                          Verify & Sign In
+                          <CheckCircle2 className="w-4 h-4" />
                         </>
                       )}
                     </button>
+
+                    <div className="text-center">
+                      {otpTimer > 0 ? (
+                        <p className="text-[11px] text-[var(--text-muted)]">
+                          Resend code in {otpTimer}s
+                        </p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSendLoginOtp}
+                          disabled={isSendingOtp}
+                          className="text-[11px] font-semibold text-[var(--primary)] hover:underline"
+                        >
+                          Didn&apos;t receive code? Resend
+                        </button>
+                      )}
+                    </div>
                   </form>
                 )}
               </div>
             )}
-            <div className="my-6 flex items-center gap-3">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="text-xs text-slate-500 uppercase tracking-widest font-mono">OR</span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
-            <div className="text-center text-sm text-slate-400">
-              Don't have an account?{" "}
-              <Link to="/register" className="font-bold text-emerald-400 hover:underline">
-                Create one now
-              </Link>
+
+            {/* Footer prompt */}
+            <div className="mt-6 pt-6 border-t border-[var(--border)] text-center">
+              <p className="text-xs text-[var(--text-muted)]">
+                Don&apos;t have an account?{" "}
+                <Link
+                  to="/register"
+                  className="font-bold text-[var(--primary)] hover:underline ml-1"
+                >
+                  Create one now
+                </Link>
+              </p>
             </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Forgot Password Modal */}
       <AnimatePresence>
         {showForgotPassword && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md"
-            style={{ background: "rgba(2,6,23,0.75)" }}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative"
-              style={{
-                background: "var(--bg-panel-strong)",
-                border: "1px solid var(--line)",
-                boxShadow: "0 25px 60px var(--shadow-glow)",
-              }}
-            >
-              <div className="mb-6 flex items-start justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-white font-heading">
-                    {fpStep === 1 ? "Forgot Password" : "Enter OTP & Reset"}
-                  </h2>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {fpStep === 1
-                      ? "Enter your email to receive a password reset OTP code."
-                      : `Enter the 6-digit OTP code sent to ${fpEmail} and choose a new password.`}
-                  </p>
+            <div className="relative w-full max-w-md rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 sm:p-8 shadow-2xl">
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--border)] mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-[var(--bg-surface)] text-[var(--primary)]">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-[var(--text-main)]">Reset Password</h3>
+                    <p className="text-[10px] text-[var(--text-muted)]">
+                      {fpStep === 1 ? "Step 1: Request OTP" : "Step 2: Enter code & new password"}
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowForgotPassword(false)}
-                  className="rounded-full bg-slate-800 p-2 text-slate-300 transition-colors hover:text-white shrink-0 ml-2"
+                  className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 >
-                  ✕
+                  <X className="w-5 h-5" />
                 </button>
               </div>
+
               {fpStep === 1 ? (
                 <form onSubmit={handleSendFpOtp} className="space-y-4">
-                  <div>
-                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                      Your Email Address
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[var(--text-muted)]">
+                      Registered Email
                     </label>
-                    <div className="relative">
-                      <Mail className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="email"
-                        value={fpEmail}
-                        onChange={(e) => setFpEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        required
-                        className="w-full rounded-2xl border border-white/10 bg-slate-800/80 pl-12 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                      />
-                    </div>
+                    <input
+                      type="email"
+                      value={fpEmail}
+                      onChange={(e) => setFpEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition"
+                      required
+                    />
                   </div>
-
                   <button
                     type="submit"
                     disabled={fpIsSending}
-                    className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                    className="theme-button-primary w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50"
                   >
-                    {fpIsSending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Sending OTP...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Send Reset OTP</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
+                    {fpIsSending ? "Sending OTP..." : "Send Reset OTP"}
                   </button>
                 </form>
               ) : (
-                /* STEP 2: ENTER OTP & NEW PASSWORD */
-                <form onSubmit={handleResetPasswordWithOtp} className="space-y-4">
-                  <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5 flex items-center justify-between text-xs">
-                    <span className="text-emerald-300 truncate">Sent to: {fpEmail}</span>
-                    <button
-                      type="button"
-                      onClick={() => setFpStep(1)}
-                      className="text-emerald-400 hover:underline font-semibold"
-                    >
-                      Change
-                    </button>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                      6-Digit OTP Code
+                <form onSubmit={handleResetPasswordWithOtp} className="space-y-3.5">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[var(--text-muted)]">
+                      Enter 6-Digit OTP
                     </label>
                     <input
                       type="text"
                       maxLength={6}
                       value={fpOtp}
-                      onChange={(e) => setFpOtp(e.target.value.replace(/\D/g, ""))}
+                      onChange={(e) => setFpOtp(e.target.value)}
                       placeholder="123456"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] text-center font-mono font-bold outline-none focus:border-[var(--primary)] transition"
                       required
-                      autoFocus
-                      className="w-full rounded-2xl border border-white/10 bg-slate-800/80 px-4 py-2.5 text-center text-lg font-mono tracking-[0.25em] text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[var(--text-muted)]">
                       New Password
                     </label>
                     <div className="relative">
@@ -634,68 +634,48 @@ const Login = () => {
                         value={fpNewPassword}
                         onChange={(e) => setFpNewPassword(e.target.value)}
                         placeholder="At least 6 characters"
+                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition"
                         required
-                        className="w-full rounded-2xl border border-white/10 bg-slate-800/80 pl-4 pr-11 py-2.5 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => setFpShowPassword(!fpShowPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
                       >
                         {fpShowPassword ? (
-                          <EyeOff className="w-4 h-4" />
+                          <EyeOff className="h-3.5 w-3.5" />
                         ) : (
-                          <Eye className="w-4 h-4" />
+                          <Eye className="h-3.5 w-3.5" />
                         )}
                       </button>
                     </div>
                   </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[var(--text-muted)]">
                       Confirm New Password
                     </label>
                     <input
-                      type={fpShowPassword ? "text" : "password"}
+                      type="password"
                       value={fpConfirmPassword}
                       onChange={(e) => setFpConfirmPassword(e.target.value)}
                       placeholder="Repeat new password"
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition"
                       required
-                      className="w-full rounded-2xl border border-white/10 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                     />
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
-                    <span>Didn't get code?</span>
-                    <button
-                      type="button"
-                      disabled={fpTimer > 0 || fpIsSending}
-                      onClick={handleSendFpOtp}
-                      className="text-emerald-400 hover:underline font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {fpTimer > 0 ? `Resend in ${fpTimer}s` : "Resend OTP"}
-                    </button>
                   </div>
 
                   <button
                     type="submit"
                     disabled={fpIsResetting}
-                    className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer mt-3"
+                    className="theme-button-primary w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 mt-1"
                   >
-                    {fpIsResetting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Updating Password...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Reset Password</span>
-                        <CheckCircle2 className="w-4 h-4" />
-                      </>
-                    )}
+                    {fpIsResetting ? "Updating Password..." : "Reset & Save Password"}
                   </button>
                 </form>
               )}
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
