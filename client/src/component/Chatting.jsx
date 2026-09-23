@@ -79,7 +79,8 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
   const currentUserId = currentUser?._id || currentUser?.id;
 
   const isSelectedOnline = selectedFriend?._id
-    ? onlineUsers.some((id) => String(id) === String(selectedFriend._id))
+    ? onlineUsers.some((id) => String(id) === String(selectedFriend._id)) ||
+      Boolean(selectedFriend.isOnline)
     : false;
 
   const scrollToBottom = () => {

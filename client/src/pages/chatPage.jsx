@@ -121,6 +121,20 @@ const ChatPage = () => {
     };
   }, [socket, user]);
 
+  // Synchronize real-time online status into users array
+  useEffect(() => {
+    if (!onlineUsers || onlineUsers.length === 0) return;
+    setUsers((prev) =>
+      prev.map((u) => {
+        const isNowOnline = onlineUsers.some((id) => String(id) === String(u._id));
+        if (u.isOnline !== isNowOnline) {
+          return { ...u, isOnline: isNowOnline };
+        }
+        return u;
+      })
+    );
+  }, [onlineUsers]);
+
   const handleLogout = async () => {
     await logout();
     toast.success("Logged out successfully");
@@ -142,8 +156,12 @@ const ChatPage = () => {
     });
   };
 
-  const isUserOnline = (userId) => {
-    return onlineUsers.some((id) => String(id) === String(userId));
+  const isUserOnline = (userObjOrId) => {
+    const targetId = String(userObjOrId?._id || userObjOrId?.id || userObjOrId);
+    return (
+      onlineUsers.some((id) => String(id) === targetId) ||
+      Boolean(userObjOrId?.isOnline)
+    );
   };
 
   const filteredUsersList = users
@@ -152,7 +170,7 @@ const ChatPage = () => {
       const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
 
-      const online = isUserOnline(u._id);
+      const online = isUserOnline(u);
       const isPinned = pinnedUserIds.includes(u._id);
 
       if (activeTab === "online") return online;
