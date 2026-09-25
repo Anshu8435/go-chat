@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTheme } from "../context/ThemeContext";
 import {
   ShieldCheck,
   Zap,
@@ -9,237 +10,305 @@ import {
   Video,
   PhoneCall,
   ArrowRight,
-  CheckCircle2,
   Globe2,
+  Palette,
 } from "lucide-react";
 
 const Herosection = () => {
   const navigate = useNavigate();
+  const { activeTheme } = useTheme();
 
   return (
     <div
-      className="relative min-h-[calc(100vh-80px)] overflow-hidden flex flex-col justify-center"
-      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+      className="relative min-h-[calc(100vh-80px)] overflow-hidden flex flex-col justify-center transition-colors duration-200"
+      style={{ backgroundColor: "var(--bg-page)", color: "var(--text-main)" }}
     >
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] bg-cyan-500/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute top-10 right-10 w-[300px] h-[300px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
+      {/* Theme ambient glows */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-          backgroundSize: "40px 40px",
-        }}
+        className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none opacity-30 transition-all duration-700"
+        style={{ backgroundColor: activeTheme.colors.primary }}
+      />
+      <div
+        className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] rounded-full blur-[130px] pointer-events-none opacity-25 transition-all duration-700"
+        style={{ backgroundColor: activeTheme.colors.secondary }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* Left Hero Content */}
           <div className="lg:col-span-7 space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wider uppercase backdrop-blur-md"
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--primary)] text-xs font-bold tracking-wider uppercase backdrop-blur-md"
             >
-              <Sparkles
-                className="w-3.5 h-3.5 text-emerald-400 animate-spin"
-                style={{ animationDuration: "8s" }}
-              />
-              <span>✦ Next-Gen Private Messaging Platform</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>✦ Enterprise Realtime Messaging</span>
             </motion.div>
+
             <motion.h1
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] md:leading-[1.1] font-heading"
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-black tracking-tight leading-[1.05] font-heading text-[var(--text-main)]"
             >
               Connect <br />
-              <span className="bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                }}
+              >
                 Privately & Freely
               </span>
             </motion.h1>
+
             <motion.p
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-lg sm:text-xl text-slate-400 max-w-xl font-normal leading-relaxed"
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-base sm:text-lg text-[var(--text-muted)] max-w-xl font-normal leading-relaxed"
             >
-              Experience seamless, ultra-fast real-time messaging with military-grade privacy. Built
-              for smooth conversations across any device worldwide.
+              Experience seamless, ultra-fast real-time messaging with military-grade privacy.
+              Crafted with modern Apple-inspired minimalism, Slack-like organization, and seven
+              distinctive enterprise themes.
             </motion.p>
+
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 pt-2"
             >
               <button
+                type="button"
                 onClick={() => navigate("/chatPage")}
-                className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-3 px-6 py-3.5 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-sm sm:text-base shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.01] transition-all duration-300 cursor-pointer"
+                className="theme-button-primary group relative inline-flex w-full sm:w-auto items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 cursor-pointer"
               >
+                <MessageSquare className="w-4 h-4" />
                 <span>Launch Chat App</span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
-                onClick={() => navigate("/register")}
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3.5 sm:px-7 sm:py-4 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-white/10 font-semibold text-sm sm:text-base backdrop-blur-md transition-all duration-300 hover:border-emerald-500/40 cursor-pointer"
+                type="button"
+                onClick={() => navigate("/settings")}
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] hover:bg-[var(--bg-card)] text-[var(--text-main)] font-bold text-xs transition-all duration-300 cursor-pointer"
               >
-                <Lock className="w-4 h-4 text-emerald-400" />
-                <span>Create Free Account</span>
+                <Palette className="w-4 h-4 text-[var(--primary)]" />
+                <span>Theme Studio (7 Themes)</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => navigate("/contact")}
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3.5 sm:px-7 sm:py-4 rounded-full border border-white/10 bg-white/5 text-slate-200 hover:text-white font-semibold text-sm sm:text-base backdrop-blur-md transition-all duration-300 hover:border-cyan-500/40 cursor-pointer"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-main)] font-semibold text-xs transition-all duration-300 cursor-pointer"
               >
-                <MessageSquare className="w-4 h-4 text-cyan-400" />
-                <span>Contact Us</span>
+                <span>Contact Enterprise</span>
               </button>
             </motion.div>
+
+            {/* Metrics */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/10 max-w-lg"
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="grid grid-cols-3 gap-4 pt-6 border-t border-[var(--border)] max-w-lg"
             >
               <div>
-                <p className="text-2xl font-bold text-white font-heading">0ms</p>
-                <p className="text-xs text-slate-400 font-medium">Real-Time Sync</p>
+                <p className="text-2xl font-black font-heading text-[var(--text-main)]">0ms</p>
+                <p className="text-xs text-[var(--text-muted)] font-medium">Real-Time Sync</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-emerald-400 font-heading">100%</p>
-                <p className="text-xs text-slate-400 font-medium">End-to-End Secure</p>
+                <p className="text-2xl font-black font-heading text-emerald-400">100%</p>
+                <p className="text-xs text-[var(--text-muted)] font-medium">End-to-End Secure</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-teal-300 font-heading">24/7</p>
-                <p className="text-xs text-slate-400 font-medium">Global Access</p>
+                <p className="text-2xl font-black font-heading text-[var(--primary)]">7 Themes</p>
+                <p className="text-xs text-[var(--text-muted)] font-medium">Enterprise Styling</p>
               </div>
             </motion.div>
           </div>
+
+          {/* Right Mockup Window */}
           <div className="lg:col-span-5 relative">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
               className="relative mx-auto max-w-md lg:max-w-none"
             >
-              <div className="relative rounded-3xl p-6 bg-gradient-to-b from-slate-900/90 to-slate-950/90 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-emerald-950/40 overflow-hidden">
-                <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
+              <div
+                className="relative rounded-3xl p-6 border shadow-2xl backdrop-blur-2xl overflow-hidden transition-all duration-300"
+                style={{
+                  backgroundColor: "var(--bg-card)",
+                  borderColor: "var(--border)",
+                  boxShadow: "0 25px 60px -15px var(--shadow-glow)",
+                }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-[var(--border)]">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-white shadow-md">
-                        S
+                      <div
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-white shadow-md text-sm"
+                        style={{
+                          background: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                        }}
+                      >
+                        SJ
                       </div>
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-slate-900 rounded-full" />
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[var(--bg-card)] rounded-full" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-white">Sarah Jenkins</h4>
-                      <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                      <h4 className="text-sm font-bold text-[var(--text-main)]">Sarah Jenkins</h4>
+                      <p className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                        Online • Active now
+                        Active now • Encrypted
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="p-2 rounded-full bg-white/5 text-slate-300 hover:text-white">
-                      <Video className="w-4 h-4" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="p-2 rounded-xl bg-[var(--bg-surface)] text-[var(--text-muted)] border border-[var(--border)]">
+                      <Video className="w-3.5 h-3.5" />
                     </span>
-                    <span className="p-2 rounded-full bg-white/5 text-slate-300 hover:text-white">
-                      <PhoneCall className="w-4 h-4" />
+                    <span className="p-2 rounded-xl bg-[var(--bg-surface)] text-[var(--text-muted)] border border-[var(--border)]">
+                      <PhoneCall className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
-                <div className="space-y-3 py-2">
+
+                {/* Messages preview */}
+                <div className="space-y-3 py-2 text-xs">
                   <div className="flex justify-start">
-                    <div className="max-w-[80%] p-3 rounded-2xl rounded-tl-xs bg-slate-800/80 border border-white/5 text-xs text-slate-200 shadow-sm">
-                      Hey! Did you check out the new ultra-luxury GoChat design?
-                      <span className="block text-[9px] text-slate-400 mt-1 text-right">
+                    <div
+                      className="max-w-[85%] p-3 rounded-2xl rounded-tl-sm border shadow-sm leading-relaxed"
+                      style={{
+                        backgroundColor: "var(--bubble-recv-bg)",
+                        color: "var(--bubble-recv-text)",
+                        borderColor: "var(--bubble-recv-border)",
+                      }}
+                    >
+                      Hey! Did you see how every page instantly inherits our enterprise design
+                      tokens?
+                      <span className="block text-[9px] text-[var(--text-muted)] mt-1 text-right">
                         10:42 AM
                       </span>
                     </div>
                   </div>
+
                   <div className="flex justify-end">
-                    <div className="max-w-[80%] p-3 rounded-2xl rounded-tr-xs bg-gradient-to-r from-emerald-600 to-teal-600 text-xs text-white font-medium shadow-md shadow-emerald-600/20">
-                      Yes! The glassmorphism and real-time socket sync look unbelievable. 🚀
-                      <span className="block text-[9px] text-emerald-200 mt-1 text-right">
+                    <div
+                      className="max-w-[85%] p-3 rounded-2xl rounded-tr-sm text-white font-medium shadow-md leading-relaxed"
+                      style={{
+                        background:
+                          activeTheme.id === "obsidian-dark" ? "#27272A" : "var(--bubble-sent-bg)",
+                      }}
+                    >
+                      Yes! The design feels completely premium—Apple minimalism with Slack
+                      hierarchy. 🚀
+                      <span className="block text-[9px] text-white/80 mt-1 text-right">
                         10:43 AM ✓✓
                       </span>
                     </div>
                   </div>
+
                   <div className="flex justify-start">
-                    <div className="max-w-[80%] p-3 rounded-2xl rounded-tl-xs bg-slate-800/80 border border-white/5 text-xs text-slate-200 shadow-sm">
-                      End-to-end security is also lightning fast!
-                      <span className="block text-[9px] text-slate-400 mt-1 text-right">
+                    <div
+                      className="max-w-[85%] p-3 rounded-2xl rounded-tl-sm border shadow-sm leading-relaxed"
+                      style={{
+                        backgroundColor: "var(--bubble-recv-bg)",
+                        color: "var(--bubble-recv-text)",
+                        borderColor: "var(--bubble-recv-border)",
+                      }}
+                    >
+                      End-to-end security is also active with zero latency.
+                      <span className="block text-[9px] text-[var(--text-muted)] mt-1 text-right">
                         10:44 AM
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-                  <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+
+                {/* Footer security badge */}
+                <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between text-[10px] text-[var(--text-muted)]">
+                  <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     End-to-End Encrypted
                   </span>
-                  <span className="bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">
+                  <span className="bg-[var(--bg-surface)] text-[var(--primary)] px-2.5 py-0.5 rounded-full border border-[var(--border)] font-mono font-bold">
                     256-BIT SSL
                   </span>
                 </div>
               </div>
+
+              {/* Floating socket pill */}
               <motion.div
-                animate={{ y: [0, -8, 0] }}
+                animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-6 -left-6 bg-slate-900/90 border border-white/15 p-3.5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center gap-3"
+                className="absolute -bottom-4 -left-4 border border-[var(--border)] bg-[var(--bg-card)] p-3 rounded-2xl shadow-xl backdrop-blur-xl flex items-center gap-2.5"
               >
-                <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
-                  <Zap className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)]">
+                  <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">WebSocket Instant</p>
-                  <p className="text-[10px] text-slate-400">0ms Message Delivery</p>
+                  <p className="text-xs font-bold text-[var(--text-main)]">WebSocket Cluster</p>
+                  <p className="text-[10px] text-[var(--text-muted)]">Real-time instant delivery</p>
                 </div>
               </motion.div>
             </motion.div>
           </div>
         </div>
-        <div className="mt-20 pt-10 border-t border-white/10 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-emerald-500/30 transition-all duration-300 backdrop-blur-md">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4">
+
+        {/* 4 Feature Cards */}
+        <div className="mt-20 pt-10 border-t border-[var(--border)] grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-300 hover:border-[var(--primary)] shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--bg-surface)] text-[var(--primary)] border border-[var(--border)] flex items-center justify-center mb-4">
               <Lock className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-white mb-1 font-heading">Total Privacy</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              No tracking, no data monetization. Your conversations remain yours alone.
+            <h3 className="text-sm font-bold text-[var(--text-main)] mb-1 font-heading">
+              Total Privacy
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              No tracking, no data monetization. Your conversations remain encrypted and yours
+              alone.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-emerald-500/30 transition-all duration-300 backdrop-blur-md">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-4">
+          <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-300 hover:border-[var(--primary)] shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--bg-surface)] text-emerald-400 border border-[var(--border)] flex items-center justify-center mb-4">
               <Zap className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-white mb-1 font-heading">Instant Sockets</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Powered by high-throughput real-time sockets for zero-delay chatting.
+            <h3 className="text-sm font-bold text-[var(--text-main)] mb-1 font-heading">
+              Instant Sockets
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              Powered by high-throughput WebSocket socket.io clustering for zero-delay chatting.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-emerald-500/30 transition-all duration-300 backdrop-blur-md">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-4">
+          <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-300 hover:border-[var(--primary)] shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--bg-surface)] text-[var(--secondary)] border border-[var(--border)] flex items-center justify-center mb-4">
               <Globe2 className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-white mb-1 font-heading">Cross-Platform</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Available seamless on web, tablet, desktop, and mobile devices anywhere.
+            <h3 className="text-sm font-bold text-[var(--text-main)] mb-1 font-heading">
+              Cross-Platform
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              Seamlessly responsive on mobile, tablet, and widescreen desktop monitors.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-emerald-500/30 transition-all duration-300 backdrop-blur-md">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-5 h-5" />
+          <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-300 hover:border-[var(--primary)] shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--bg-surface)] text-[var(--highlight)] border border-[var(--border)] flex items-center justify-center mb-4">
+              <Palette className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-white mb-1 font-heading">Luxury Aesthetic</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Crafted with modern minimal dark glassmorphism and refined typography.
+            <h3 className="text-sm font-bold text-[var(--text-main)] mb-1 font-heading">
+              Seven Enterprise Themes
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              Switch between five creative themes, dedicated dark, and porcelain light with 1-click.
             </p>
           </div>
         </div>
