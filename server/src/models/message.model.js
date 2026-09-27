@@ -33,9 +33,27 @@ const messageSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    conversationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conversation",
+      default: null,
+      index: true,
+    },
+    isRead: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    readAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
+
+messageSchema.index({ senderId: 1, receiverId: 1, createdAt: 1 });
+messageSchema.index({ receiverId: 1, isRead: 1 });
 
 const Message = mongoose.models.Message || mongoose.model("Message", messageSchema);
 

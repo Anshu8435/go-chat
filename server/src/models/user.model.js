@@ -50,6 +50,17 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    onlineVisibility: {
+      type: String,
+      enum: ["everyone", "contacts", "selected", "nobody"],
+      default: "everyone",
+    },
+    selectedOnlineContacts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
