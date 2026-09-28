@@ -14,13 +14,19 @@ import {
   Trash2,
   Upload,
   UserRound,
+  Palette,
+  MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
+import ThemeQuickSwitch from "../component/ThemeQuickSwitch";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { user, logout, updateProfile, changePassword, loading } = useAuth();
+  const { activeTheme } = useTheme();
 
   const fileInputRef = useRef(null);
 
@@ -108,7 +114,7 @@ const DashboardPage = () => {
         const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
         setProfileData((prev) => ({ ...prev, profilePic: compressedDataUrl }));
         setIsProcessingPhoto(false);
-        toast.success("Profile photo loaded! Click 'Save profile' to persist.");
+        toast.success("Profile photo loaded! Click 'Save Profile' to persist.");
       };
 
       img.onerror = () => {
@@ -125,7 +131,7 @@ const DashboardPage = () => {
 
   const handleRemovePhoto = () => {
     setProfileData((prev) => ({ ...prev, profilePic: "" }));
-    toast("Photo removed. Click 'Save profile' to confirm.");
+    toast("Photo removed. Click 'Save Profile' to confirm.");
   };
 
   const handleProfileSubmit = async (e) => {
@@ -203,26 +209,30 @@ const DashboardPage = () => {
     return (
       <div
         className="flex min-h-screen items-center justify-center theme-shell"
-        style={{ color: "var(--text)" }}
+        style={{ color: "var(--text-main)", backgroundColor: "var(--bg-page)" }}
       >
-        <div className="rounded-2xl px-6 py-4 theme-soft">Loading your dashboard...</div>
+        <div className="rounded-2xl px-6 py-4 border border-[var(--border)] bg-[var(--bg-card)]">
+          Loading your dashboard...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen theme-shell" style={{ color: "var(--text)" }}>
+    <div
+      className="min-h-screen theme-shell transition-colors duration-200"
+      style={{ backgroundColor: "var(--bg-page)", color: "var(--text-main)" }}
+    >
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <header
-          className="mb-8 flex flex-col gap-4 rounded-3xl p-5 shadow-2xl md:flex-row md:items-center md:justify-between"
-          style={{
-            background: "var(--bg-panel)",
-            border: "1px solid var(--line)",
-            boxShadow: "0 25px 50px var(--shadow-glow)",
-          }}
-        >
+        {/* Header Bar */}
+        <header className="mb-8 flex flex-col gap-4 rounded-3xl p-6 shadow-xl border border-[var(--border)] bg-[var(--bg-card)] md:flex-row md:items-center md:justify-between backdrop-blur-xl">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 overflow-hidden relative border border-white/20">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-lg overflow-hidden relative border border-[var(--border)]"
+              style={{
+                background: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+              }}
+            >
               {profileData.profilePic ? (
                 <img
                   src={profileData.profilePic}
@@ -234,43 +244,71 @@ const DashboardPage = () => {
               )}
             </div>
             <div>
-              <p className="text-sm uppercase tracking-[0.25em] text-emerald-300">Dashboard</p>
-              <h1 className="mt-1 text-2xl font-bold text-white">Welcome back, {user.fullName}</h1>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--primary)]">
+                Enterprise Dashboard
+              </p>
+              <h1 className="mt-1 text-2xl font-black text-[var(--text-main)] font-heading">
+                Welcome back, {user.fullName}
+              </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <ThemeQuickSwitch />
+
             <Link
               to="/chatPage"
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10"
+              className="theme-button-primary rounded-xl px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5"
             >
+              <MessageSquare className="h-3.5 w-3.5" />
               Open Chat
             </Link>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-300 transition hover:bg-red-500/20 cursor-pointer"
+
+            <Link
+              to="/settings"
+              className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-semibold text-[var(--text-main)] transition hover:border-[var(--primary)]"
             >
-              <LogOut className="h-4 w-4" />
+              <Palette className="h-3.5 w-3.5 inline mr-1 text-[var(--primary)]" />
+              Theme Studio
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 transition hover:bg-red-500/20 cursor-pointer"
+            >
+              <LogOut className="h-3.5 w-3.5" />
               Logout
             </button>
           </div>
         </header>
 
+        {/* Content Columns */}
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="space-y-6">
-            <section className="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl shadow-slate-950/20">
+            {/* Profile Section */}
+            <section className="rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 sm:p-8 shadow-xl">
               <div className="mb-6 flex items-center gap-3">
-                <div className="rounded-2xl bg-emerald-500/10 p-2 text-emerald-300">
+                <div className="rounded-2xl bg-[var(--bg-surface)] p-2.5 text-[var(--primary)] border border-[var(--border)]">
                   <UserRound className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Account</p>
-                  <h2 className="text-xl font-semibold text-white">Profile & Photo</h2>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                    Account Profile
+                  </p>
+                  <h2 className="text-xl font-bold text-[var(--text-main)]">Profile & Photo</h2>
                 </div>
               </div>
-              <div className="mb-8 rounded-2xl border border-white/10 bg-slate-900/60 p-5 flex flex-col sm:flex-row items-center gap-6">
+
+              {/* Photo Box */}
+              <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 flex flex-col sm:flex-row items-center gap-6">
                 <div className="relative group shrink-0">
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-emerald-500/40 shadow-xl bg-gradient-to-tr from-slate-800 to-slate-700 flex items-center justify-center text-2xl font-bold text-white">
+                  <div
+                    className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-[var(--primary)]/50 shadow-xl flex items-center justify-center text-2xl font-bold text-white"
+                    style={{
+                      background: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                    }}
+                  >
                     {profileData.profilePic ? (
                       <img
                         src={profileData.profilePic}
@@ -284,18 +322,21 @@ const DashboardPage = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    title="Change profile picture"
-                    className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/40 hover:bg-emerald-400 transition-all cursor-pointer"
+                    title="Change profile photo"
+                    className="absolute -bottom-2 -right-2 p-2 rounded-xl text-white shadow-lg transition-all cursor-pointer"
+                    style={{
+                      background: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                    }}
                   >
                     <Camera className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div className="flex-1 text-center sm:text-left space-y-2">
-                  <h3 className="text-sm font-semibold text-white">Your Profile Avatar</h3>
-                  <p className="text-xs text-slate-400">
-                    Upload a custom photo (JPEG, PNG, WebP). Your picture will be visible to your
-                    contacts in chat.
+                  <h3 className="text-sm font-bold text-[var(--text-main)]">Your Profile Avatar</h3>
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                    Upload an avatar image (JPEG, PNG, WebP). Your picture is automatically
+                    optimized and rendered for your contacts in live chat.
                   </p>
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
@@ -310,7 +351,7 @@ const DashboardPage = () => {
                       type="button"
                       disabled={isProcessingPhoto}
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 text-xs font-semibold transition cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--primary)] hover:border-[var(--primary)] text-xs font-bold transition cursor-pointer"
                     >
                       <Upload className="w-3.5 h-3.5" />
                       {profileData.profilePic ? "Change Photo" : "Upload Photo"}
@@ -320,7 +361,7 @@ const DashboardPage = () => {
                       <button
                         type="button"
                         onClick={handleRemovePhoto}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-medium transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-semibold transition cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         Remove
@@ -329,118 +370,135 @@ const DashboardPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Form */}
               <form onSubmit={handleProfileSubmit} className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Full Name</span>
-                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
-                      <UserRound className="h-4 w-4 text-slate-400" />
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold text-[var(--text-muted)]">
+                      Full Name
+                    </span>
+                    <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-3">
+                      <UserRound className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
                       <input
                         type="text"
                         value={profileData.fullName}
                         onChange={(e) =>
                           setProfileData({ ...profileData, fullName: e.target.value })
                         }
-                        className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
+                        className="w-full bg-transparent text-[var(--text-main)] outline-none text-sm font-medium"
                         placeholder="John Doe"
                       />
                     </div>
                   </label>
 
-                  <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Phone</span>
-                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
-                      <Phone className="h-4 w-4 text-slate-400" />
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold text-[var(--text-muted)]">Phone</span>
+                    <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-3">
+                      <Phone className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
                       <input
                         type="tel"
                         value={profileData.phone}
                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                        className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
+                        className="w-full bg-transparent text-[var(--text-main)] outline-none text-sm font-medium"
                         placeholder="+91 9876543210"
                       />
                     </div>
                   </label>
                 </div>
 
-                <label className="block space-y-2">
-                  <span className="text-sm text-slate-300">Email address</span>
-                  <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
-                    <Mail className="h-4 w-4 text-slate-400" />
+                <label className="block space-y-1.5">
+                  <span className="text-xs font-semibold text-[var(--text-muted)]">
+                    Email address
+                  </span>
+                  <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-3">
+                    <Mail className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
                     <input
                       type="email"
                       value={profileData.email}
                       onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                      className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
+                      className="w-full bg-transparent text-[var(--text-main)] outline-none text-sm font-medium"
                       placeholder="name@example.com"
                     />
                   </div>
                 </label>
-                <label className="block space-y-2">
+
+                <label className="block space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-300">Bio / Status</span>
-                    <span className="text-xs text-slate-500">{profileData.bio.length}/200</span>
+                    <span className="text-xs font-semibold text-[var(--text-muted)]">
+                      Bio / Status
+                    </span>
+                    <span className="text-[11px] text-[var(--text-muted)]">
+                      {profileData.bio.length}/200
+                    </span>
                   </div>
-                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
-                    <PencilLine className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+                  <div className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-3">
+                    <PencilLine className="h-4 w-4 text-[var(--text-muted)] mt-0.5 shrink-0" />
                     <textarea
                       value={profileData.bio}
                       onChange={(e) =>
                         setProfileData({ ...profileData, bio: e.target.value.slice(0, 200) })
                       }
                       rows={3}
-                      className="w-full resize-none bg-transparent text-white outline-none placeholder:text-slate-500 text-sm leading-relaxed"
-                      placeholder="Write a short bio or status message (e.g. 'Available', 'Building cool stuff 🚀')…"
+                      className="w-full resize-none bg-transparent text-[var(--text-main)] outline-none text-sm leading-relaxed"
+                      placeholder="Write a brief status message (e.g. 'Available for messaging 🚀')…"
                     />
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Visible to your contacts in the chat sidebar.
+                  <p className="text-[11px] text-[var(--text-muted)]">
+                    Visible to all contacts in the chat sidebar.
                   </p>
                 </label>
 
-                <div className="flex items-center justify-between gap-3 pt-2">
-                  <p className="text-sm text-slate-400">
-                    Save your profile details and photo to your account.
+                <div className="flex items-center justify-between gap-3 pt-3 border-t border-[var(--border)]">
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Persist your profile updates across sessions.
                   </p>
                   <button
                     type="submit"
                     disabled={savingProfile || isProcessingPhoto}
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+                    className="theme-button-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold disabled:opacity-50 cursor-pointer"
                   >
                     <Save className="h-4 w-4" />
-                    {savingProfile ? "Saving..." : "Save profile"}
+                    {savingProfile ? "Saving..." : "Save Profile"}
                   </button>
                 </div>
               </form>
             </section>
-            <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-slate-950/20">
+
+            {/* Password Section */}
+            <section className="rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 sm:p-8 shadow-xl">
               <div className="mb-5 flex items-center gap-3">
-                <div className="rounded-2xl bg-sky-500/10 p-2 text-sky-300">
+                <div className="rounded-2xl bg-[var(--bg-surface)] p-2.5 text-[var(--secondary)] border border-[var(--border)]">
                   <Lock className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Security</p>
-                  <h2 className="text-xl font-semibold text-white">Update password</h2>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                    Credentials
+                  </p>
+                  <h2 className="text-xl font-bold text-[var(--text-main)]">Change Password</h2>
                 </div>
               </div>
 
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                <label className="block space-y-2">
-                  <span className="text-sm text-slate-300">Current password</span>
-                  <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
-                    <Lock className="h-4 w-4 text-slate-400" />
+                <label className="block space-y-1.5">
+                  <span className="text-xs font-semibold text-[var(--text-muted)]">
+                    Current Password
+                  </span>
+                  <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-3">
+                    <Lock className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
                     <input
                       type={showCurrentPassword ? "text" : "password"}
                       value={passwordData.currentPassword}
                       onChange={(e) =>
                         setPasswordData({ ...passwordData, currentPassword: e.target.value })
                       }
-                      className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
+                      className="w-full bg-transparent text-[var(--text-main)] outline-none text-sm font-medium"
                       placeholder="Enter current password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="text-slate-400 transition hover:text-white"
+                      className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"
                     >
                       {showCurrentPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -452,23 +510,25 @@ const DashboardPage = () => {
                 </label>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="space-y-2">
-                    <span className="text-sm text-slate-300">New password</span>
-                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
-                      <ShieldCheck className="h-4 w-4 text-slate-400" />
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold text-[var(--text-muted)]">
+                      New Password
+                    </span>
+                    <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-3">
+                      <ShieldCheck className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
                       <input
                         type={showNewPassword ? "text" : "password"}
                         value={passwordData.newPassword}
                         onChange={(e) =>
                           setPasswordData({ ...passwordData, newPassword: e.target.value })
                         }
-                        className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
-                        placeholder="Minimum 6 characters"
+                        className="w-full bg-transparent text-[var(--text-main)] outline-none text-sm font-medium"
+                        placeholder="At least 6 characters"
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="text-slate-400 transition hover:text-white"
+                        className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"
                       >
                         {showNewPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -479,48 +539,57 @@ const DashboardPage = () => {
                     </div>
                   </label>
 
-                  <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Confirm password</span>
-                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
-                      <ShieldCheck className="h-4 w-4 text-slate-400" />
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold text-[var(--text-muted)]">
+                      Confirm Password
+                    </span>
+                    <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-3">
+                      <ShieldCheck className="h-4 w-4 text-[var(--text-muted)] flex-shrink-0" />
                       <input
                         type="password"
                         value={passwordData.confirmPassword}
                         onChange={(e) =>
                           setPasswordData({ ...passwordData, confirmPassword: e.target.value })
                         }
-                        className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
+                        className="w-full bg-transparent text-[var(--text-main)] outline-none text-sm font-medium"
                         placeholder="Confirm new password"
                       />
                     </div>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 pt-2">
-                  <p className="text-sm text-slate-400">
-                    Use a strong password for better protection.
+                <div className="flex items-center justify-between gap-3 pt-3 border-t border-[var(--border)]">
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Use letters, numbers, and symbols for high security.
                   </p>
                   <button
                     type="submit"
                     disabled={savingPassword}
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] hover:bg-[var(--bg-card)] px-5 py-2.5 text-xs font-bold text-[var(--text-main)] transition cursor-pointer disabled:opacity-50"
                   >
-                    <PencilLine className="h-4 w-4" />
-                    {savingPassword ? "Updating..." : "Update password"}
+                    {savingPassword ? "Updating..." : "Update Password"}
                   </button>
                 </div>
               </form>
             </section>
           </div>
 
+          {/* Right Column: Account Overview */}
           <aside className="space-y-6">
-            <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-500/20 to-cyan-500/10 p-6 shadow-xl shadow-slate-950/20">
-              <p className="text-xs uppercase tracking-[0.25em] text-emerald-300">Summary</p>
-              <h3 className="mt-2 text-2xl font-bold text-white">Account overview</h3>
+            <section className="rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--primary)]">
+                Account Summary
+              </p>
+              <h3 className="mt-1 text-xl font-bold text-[var(--text-main)]">Live Profile Card</h3>
 
-              <div className="mt-6 space-y-4">
-                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4 flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-800 border border-white/10 overflow-hidden flex items-center justify-center font-bold text-emerald-400 shrink-0">
+              <div className="mt-6 space-y-3.5">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4 flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-xl text-white overflow-hidden flex items-center justify-center font-bold text-sm shrink-0"
+                    style={{
+                      background: `linear-gradient(135deg, ${activeTheme.colors.primary}, ${activeTheme.colors.secondary})`,
+                    }}
+                  >
                     {profileData.profilePic ? (
                       <img
                         src={profileData.profilePic}
@@ -532,58 +601,75 @@ const DashboardPage = () => {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Name</p>
-                    <p className="mt-0.5 text-base font-semibold text-white truncate">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                      Display Name
+                    </p>
+                    <p className="text-sm font-bold text-[var(--text-main)] truncate">
                       {user.fullName}
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Email</p>
-                  <p className="mt-2 text-sm font-semibold text-white break-all">{user.email}</p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Status</p>
-                  <p className="mt-2 inline-flex items-center gap-2 text-base font-semibold text-emerald-300">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Active account
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                    Registered Email
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-[var(--text-main)] break-all">
+                    {user.email}
                   </p>
                 </div>
 
-                {(profileData.bio || user?.bio) && (
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                    <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Bio</p>
-                    <p className="mt-2 text-sm text-slate-300 leading-relaxed break-words">
-                      {profileData.bio || user.bio}
-                    </p>
-                  </div>
-                )}
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                    Realtime Presence
+                  </p>
+                  <p className="mt-1 inline-flex items-center gap-2 text-xs font-semibold text-emerald-400">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Connected to WebSocket Cluster
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                    Active Theme Token
+                  </p>
+                  <p className="mt-1 text-xs font-semibold text-[var(--primary)] flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {activeTheme.name} ({activeTheme.category})
+                  </p>
+                </div>
               </div>
             </section>
 
-            <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-slate-950/20">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Quick links</p>
+            <section className="rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                Quick Navigation
+              </p>
 
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 space-y-2.5">
                 <Link
                   to="/chatPage"
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900/70 p-3 text-slate-200 transition hover:bg-slate-800"
+                  className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-3 text-xs font-semibold text-[var(--text-main)] transition hover:border-[var(--primary)] hover:bg-[var(--bg-card)]"
                 >
-                  <span>Messages</span>
-                  <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-xs text-emerald-300">
+                  <span className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-[var(--primary)]" />
+                    Workspace Chat
+                  </span>
+                  <span className="rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-2 py-0.5 text-[10px] font-bold">
                     Open
                   </span>
                 </Link>
 
                 <Link
                   to="/settings"
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900/70 p-3 text-slate-200 transition hover:bg-slate-800"
+                  className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-3 text-xs font-semibold text-[var(--text-main)] transition hover:border-[var(--primary)] hover:bg-[var(--bg-card)]"
                 >
-                  <span>Theme settings</span>
-                  <span className="rounded-full bg-cyan-500/15 px-2 py-1 text-xs text-cyan-300">
-                    Edit
+                  <span className="flex items-center gap-2">
+                    <Palette className="h-4 w-4 text-[var(--secondary)]" />
+                    Theme Studio
+                  </span>
+                  <span className="rounded-full bg-[var(--secondary)]/10 text-[var(--secondary)] px-2 py-0.5 text-[10px] font-bold">
+                    7 Themes
                   </span>
                 </Link>
               </div>
