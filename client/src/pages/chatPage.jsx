@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Chatting from "../component/Chatting.jsx";
 import { api, useAuth } from "../context/AuthContext.jsx";
 import { useSocket } from "../context/SocketContext.jsx";
-import { LogOut, User as UserIcon, Search } from "lucide-react";
+import { LogOut, User as UserIcon, Search, MessageSquare, ShieldCheck, Sparkles, Circle, Users, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 
 const ChatPage = () => {
@@ -43,63 +43,90 @@ const ChatPage = () => {
   });
 
   return (
-    <div className="flex h-screen w-full bg-white overflow-hidden">
+    <div className="flex h-screen w-full bg-[#0B0F19] text-white overflow-hidden font-sans">
+      
       {/* ================= LEFT SIDEBAR ================= */}
-      <div className="w-[380px] min-w-[340px] h-full border-r border-gray-200 bg-white flex flex-col">
-        {/* ===== HEADER ===== */}
-        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+      <div 
+        className={`w-full md:w-[380px] md:min-w-[340px] h-full border-r border-white/10 bg-[#0F172A]/90 backdrop-blur-2xl flex flex-col z-20 transition-all ${
+          selectedFriend ? "hidden md:flex" : "flex"
+        }`}
+      >
+        
+        {/* SIDEBAR HEADER */}
+        <div className="p-4 border-b border-white/10 bg-slate-900/50 space-y-4">
+          
+          {/* TOP BAR: BRAND + USER PROFILE */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-xl font-bold text-green-600">GoChat</span>
-              <span className="text-[11px] font-medium text-slate-400 ms-2">
-                Connect • Chat • Go
-              </span>
-            </div>
-
-            {/* Current User Info & Logout */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 bg-white px-2.5 py-1 rounded-full border border-gray-200 shadow-xs">
-                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-xs">
-                  {user?.fullName?.charAt(0).toUpperCase() || (
-                    <UserIcon className="w-3.5 h-3.5" />
-                  )}
-                </div>
-                <span className="text-xs font-semibold text-gray-700 max-w-[80px] truncate">
-                  {user?.fullName || "User"}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white font-heading tracking-tight leading-none">GoChat</h1>
+                <span className="text-[10px] font-medium text-emerald-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Realtime Workspace
                 </span>
               </div>
+            </div>
+
+            {/* LOGGED IN USER AVATAR & LOGOUT */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-white/10">
+                <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-inner">
+                  {user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="w-3.5 h-3.5" />}
+                </div>
+                <span className="text-xs font-semibold text-slate-200 max-w-[80px] truncate">
+                  {user?.fullName?.split(" ")[0] || "User"}
+                </span>
+              </div>
+
               <button
                 onClick={handleLogout}
                 title="Logout"
-                className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Search Box */}
-          <div className="mt-3 relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
+          {/* SEARCH BOX */}
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-gray-200 rounded-lg outline-none focus:border-green-500 transition-all"
+              className="w-full pl-10 pr-4 py-2 text-xs bg-slate-800/60 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner"
             />
           </div>
+
         </div>
 
-        {/* ================= USER LIST ================= */}
-        <div className="flex-1 overflow-y-auto space-y-1 p-2">
+        {/* USERS LIST HEADER */}
+        <div className="px-4 py-2.5 bg-slate-900/30 border-b border-white/5 flex items-center justify-between">
+          <span className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-emerald-400" />
+            Direct Messages
+          </span>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[10px] font-semibold">
+            {filteredUsersList.length} Registered
+          </span>
+        </div>
+
+        {/* USERS LIST BODY */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
           {loadingUsers ? (
-            <div className="p-4 text-center text-xs text-gray-400">
-              Loading registered users...
+            <div className="p-8 text-center space-y-3">
+              <div className="w-8 h-8 mx-auto border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-xs text-slate-400 font-medium">Loading workspace contacts...</p>
             </div>
           ) : filteredUsersList.length === 0 ? (
-            <div className="p-6 text-center text-xs text-gray-400">
-              No registered users found.
+            <div className="p-8 text-center text-xs text-slate-400 space-y-2">
+              <Users className="w-8 h-8 mx-auto text-slate-600 mb-1" />
+              <p>No registered contacts found.</p>
             </div>
           ) : (
             filteredUsersList.map((u) => {
@@ -110,36 +137,45 @@ const ChatPage = () => {
                 <div
                   key={u._id}
                   onClick={() => setSelectedFriend(u)}
-                  className={`px-3 py-2.5 flex items-center gap-3 rounded-xl cursor-pointer transition ${
-                    isSelected ? "bg-green-50 border border-green-200" : "hover:bg-gray-100"
+                  className={`group relative p-3 flex items-center gap-3.5 rounded-2xl cursor-pointer transition-all duration-300 ${
+                    isSelected
+                      ? "bg-slate-800/90 border border-emerald-500/40 shadow-lg shadow-emerald-950/20"
+                      : "bg-slate-900/40 border border-white/5 hover:bg-slate-800/60 hover:border-white/10"
                   }`}
                 >
-                  {/* ===== AVATAR ===== */}
+                  {/* SELECTED ACCENT BAR */}
+                  {isSelected && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-400 rounded-r-full shadow-[0_0_12px_#10B981]" />
+                  )}
+
+                  {/* AVATAR */}
                   <div className="relative flex-shrink-0">
-                    <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-semibold text-base shadow-xs">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold text-base shadow-md">
                       {u.fullName?.charAt(0).toUpperCase() || "U"}
                     </div>
 
-                    {/* Online status dot */}
+                    {/* ONLINE BADGE */}
                     <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                        isOnline ? "bg-green-500" : "bg-gray-300"
+                      className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-slate-900 ${
+                        isOnline ? "bg-emerald-400 shadow-[0_0_8px_#10B981]" : "bg-slate-500"
                       }`}
                     />
                   </div>
 
-                  {/* ===== DETAILS ===== */}
+                  {/* USER DETAILS */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-sm font-semibold text-gray-800 truncate">
-                        {u.fullName}
+                      <h2 className="text-sm font-semibold text-white truncate group-hover:text-emerald-300 transition-colors">
+                        {u.fullName || "User"}
                       </h2>
-                      <span className="text-[10px] text-gray-400">
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                        isOnline ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-slate-800 text-slate-400"
+                      }`}>
                         {isOnline ? "Online" : "Offline"}
                       </span>
                     </div>
 
-                    <p className="text-xs text-gray-400 truncate mt-0.5">
+                    <p className="text-xs text-slate-400 truncate mt-1 font-sans">
                       {u.email}
                     </p>
                   </div>
@@ -148,26 +184,72 @@ const ChatPage = () => {
             })
           )}
         </div>
+
       </div>
 
-      {/* ================= RIGHT CHAT AREA ================= */}
-      <div className="flex-1 h-full">
+      {/* ================= RIGHT MAIN CHAT AREA ================= */}
+      <div className={`flex-1 h-full ${!selectedFriend ? "hidden md:flex" : "flex"} flex-col`}>
         {selectedFriend ? (
-          <Chatting selectedFriend={selectedFriend} currentUser={user} />
-        ) : (
-          <div className="h-full flex items-center justify-center bg-gray-50">
-            <div className="text-center p-6">
-              <div className="text-6xl mb-4">💬</div>
-              <h2 className="text-2xl font-semibold text-gray-700">
-                Welcome to GoChat, {user?.fullName || "User"}!
-              </h2>
-              <p className="text-gray-400 mt-2 text-sm max-w-sm">
-                Select any registered user from the sidebar to start private real-time chatting.
-              </p>
+          <div className="relative h-full flex flex-col">
+            {/* Mobile Back Button Bar */}
+            <div className="md:hidden flex items-center gap-2 p-3 bg-slate-900 border-b border-white/10">
+              <button
+                onClick={() => setSelectedFriend(null)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Contacts
+              </button>
             </div>
+            
+            <div className="flex-1 h-full overflow-hidden">
+              <Chatting selectedFriend={selectedFriend} currentUser={user} />
+            </div>
+          </div>
+        ) : (
+          /* EMPTY STATE SCREEN */
+          <div className="h-full flex flex-col items-center justify-center p-8 bg-[#0B0F19] text-center relative overflow-hidden">
+            
+            {/* AMBIENT LIGHT */}
+            <div className="absolute w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none" />
+
+            <div className="relative z-10 max-w-md space-y-6">
+              
+              <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center shadow-2xl backdrop-blur-xl">
+                <MessageSquare className="w-12 h-12 text-emerald-400 animate-pulse" />
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="text-3xl font-extrabold text-white font-heading">
+                  Welcome to GoChat, <br />
+                  <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+                    {user?.fullName || "User"}
+                  </span>
+                </h2>
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  Select a registered contact from the sidebar to start high-definition, end-to-end encrypted real-time chat.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-left pt-4">
+                <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/10 backdrop-blur-md">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400 mb-2" />
+                  <p className="text-xs font-bold text-white">256-Bit Encryption</p>
+                  <p className="text-[10px] text-slate-400">Zero logging policy</p>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/10 backdrop-blur-md">
+                  <Sparkles className="w-5 h-5 text-teal-400 mb-2" />
+                  <p className="text-xs font-bold text-white">WebSocket Sync</p>
+                  <p className="text-[10px] text-slate-400">Real-time instant delivery</p>
+                </div>
+              </div>
+
+            </div>
+
           </div>
         )}
       </div>
+
     </div>
   );
 };
