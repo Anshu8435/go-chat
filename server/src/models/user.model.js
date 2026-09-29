@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
-const UserSchema = mongoose.Schema(
+const UserSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: true,
+      required: [true, "Full name is required"],
       trim: true,
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -20,10 +20,13 @@ const UserSchema = mongoose.Schema(
     },
     google_id: {
       type: String,
+      default: null,
     },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.google_id && this.loginType === "normal_user";
+      },
     },
     loginType: {
       type: String,
@@ -36,6 +39,7 @@ const UserSchema = mongoose.Schema(
   }
 );
 
-const User = mongoose.model("user", UserSchema);
+const User = mongoose.models.User || mongoose.models.user || mongoose.model("User", UserSchema);
 export default User;
+
 

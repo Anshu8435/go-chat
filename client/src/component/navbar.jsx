@@ -5,7 +5,7 @@ import GochatIcon from "../assets/Gochat.png";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
-const navbar = () => {
+const Navbar = () => {
   const [selectedTheme, setSelectedTheme] = useState("light");
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
@@ -285,4 +285,4 @@ text-xl font-serif
   );
 };
 
-export default navbar;
+export default Navbar;

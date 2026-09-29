@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
 import Herosection from "./component/herosection.jsx";
 import Login from "./pages/login.jsx";
 import Navbar from "./component/navbar.jsx";
@@ -106,20 +107,22 @@ const AppRoutes = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3500,
-          style: {
-            background: "#332F3A",
-            color: "#fff",
-            borderRadius: "12px",
-          },
-        }}
-      />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <SocketProvider>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3500,
+            style: {
+              background: "#332F3A",
+              color: "#fff",
+              borderRadius: "12px",
+            },
+          }}
+        />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </SocketProvider>
     </AuthProvider>
   );
 };
