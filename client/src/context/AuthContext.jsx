@@ -14,32 +14,59 @@ export const api = axios.create({
 
 // Add request interceptor to attach token from localStorage
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = getSessionItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+const getSessionItem = (key) => {
+  if (typeof window === "undefined") return null;
+  try {
+    return sessionStorage.getItem(key);
+  } catch (error) {
+    return null;
+  }
+};
+
+const setSessionItem = (key, value) => {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(key, value);
+  } catch (error) {
+    // Ignore storage quota/session issues
+  }
+};
+
+const removeSessionItem = (key) => {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(key);
+  } catch (error) {
+    // Ignore storage quota/session issues
+  }
+};
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = getSessionItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
-  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
+  const [token, setToken] = useState(() => getSessionItem("token") || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const storedToken = localStorage.getItem("token");
+      const storedToken = getSessionItem("token");
       if (storedToken) {
         try {
           const res = await api.get("/auth/me");
           if (res.data?.user) {
             setUser(res.data.user);
-            localStorage.setItem("user", JSON.stringify(res.data.user));
+            setSessionItem("user", JSON.stringify(res.data.user));
           }
         } catch (error) {
           console.error("Session verification failed:", error);
@@ -61,8 +88,8 @@ export const AuthProvider = ({ children }) => {
     setToken(newToken);
     setUser(userData);
 
-    localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(userData));
+    setSessionItem("token", newToken);
+    setSessionItem("user", JSON.stringify(userData));
 
     return response.data;
   };
@@ -74,8 +101,8 @@ export const AuthProvider = ({ children }) => {
     setToken(newToken);
     setUser(userData);
 
-    localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(userData));
+    setSessionItem("token", newToken);
+    setSessionItem("user", JSON.stringify(userData));
 
     return response.data;
   };
@@ -88,8 +115,8 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setToken(null);
       setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      removeSessionItem("token");
+      removeSessionItem("user");
     }
   };
 
