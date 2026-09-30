@@ -107,6 +107,15 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+  const forgotPassword = async (email, newPassword) => {
+    const response = await api.post("/auth/forgot-password", {
+      email,
+      newPassword,
+    });
+
+    return response.data;
+  };
+
   const logout = async () => {
     try {
       await api.post("/auth/logout");
@@ -129,6 +138,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        forgotPassword,
         logout,
       }}
     >

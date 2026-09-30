@@ -102,6 +102,37 @@ export const LogoutrUser = (req, res) => {
   return res.status(200).json({ message: "Logged out successfully." });
 };
 
+export const ForgotPassword = async (req, res, next) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email and a new password are required." });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: "No account found with that email." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password reset successful. Please login with your new password.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const GetMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select("-password");

@@ -7,18 +7,30 @@ import { motion } from "framer-motion";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, forgotPassword } = useAuth();
 
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
+  const [resetData, setResetData] = useState({
+    email: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleResetChange = (e) => {
+    const { name, value } = e.target;
+    setResetData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -39,6 +51,38 @@ const Login = () => {
       toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPasswordSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!resetData.email || !resetData.newPassword || !resetData.confirmPassword) {
+      toast.error("Please fill in all fields to reset your password.");
+      return;
+    }
+
+    if (resetData.newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (resetData.newPassword !== resetData.confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setIsResetting(true);
+      const res = await forgotPassword(resetData.email, resetData.newPassword);
+      toast.success(res.message || "Password reset successful.");
+      setShowForgotPassword(false);
+      setResetData({ email: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Failed to reset password.";
+      toast.error(errorMsg);
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -163,7 +207,7 @@ const Login = () => {
                   </label>
                   <button
                     type="button"
-                    onClick={() => toast.error("Password reset functionality is under maintenance.")}
+                    onClick={() => setShowForgotPassword(true)}
                     className="text-xs font-medium text-emerald-400 hover:underline"
                   >
                     Forgot password?
@@ -230,6 +274,78 @@ const Login = () => {
         </motion.div>
 
       </div>
+
+      {showForgotPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/95 p-6 shadow-2xl shadow-emerald-950/30">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white font-heading">Reset Password</h2>
+                <p className="mt-1 text-xs text-slate-400">Enter your email and choose a new password.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(false)}
+                className="rounded-full bg-slate-800 p-2 text-slate-300 transition-colors hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={resetData.email}
+                  onChange={handleResetChange}
+                  placeholder="name@example.com"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-800/60 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={resetData.newPassword}
+                  onChange={handleResetChange}
+                  placeholder="Enter new password"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-800/60 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={resetData.confirmPassword}
+                  onChange={handleResetChange}
+                  placeholder="Confirm new password"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-800/60 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isResetting}
+                className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isResetting ? "Resetting..." : "Set New Password"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
