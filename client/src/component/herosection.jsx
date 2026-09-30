@@ -46,7 +46,7 @@ const Herosection = () => {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
-              className="text-5xl sm:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] font-heading"
+              className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] md:leading-[1.1] font-heading"
             >
               Connect <br />
               <span className="bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">
@@ -69,19 +69,19 @@ const Herosection = () => {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-4 pt-2"
+              className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 pt-2"
             >
               <button
                 onClick={() => navigate("/chatPage")}
-                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-base shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+                className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-3 px-6 py-3.5 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-sm sm:text-base shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.01] transition-all duration-300 cursor-pointer"
               >
                 <span>Launch Chat App</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
                 onClick={() => navigate("/register")}
-                className="inline-flex items-center gap-2 px-7 py-4 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-white/10 font-semibold text-base backdrop-blur-md transition-all duration-300 hover:border-emerald-500/40 cursor-pointer"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3.5 sm:px-7 sm:py-4 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-white/10 font-semibold text-sm sm:text-base backdrop-blur-md transition-all duration-300 hover:border-emerald-500/40 cursor-pointer"
               >
                 <Lock className="w-4 h-4 text-emerald-400" />
                 <span>Create Free Account</span>
@@ -93,7 +93,7 @@ const Herosection = () => {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.4 }}
-              className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10 max-w-lg"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/10 max-w-lg"
             >
               <div>
                 <p className="text-2xl font-bold text-white font-heading">0ms</p>

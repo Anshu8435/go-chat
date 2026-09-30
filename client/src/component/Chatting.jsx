@@ -167,12 +167,12 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#0B0F19] text-white">
       
       {/* ================= HEADER ================= */}
-      <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 bg-[#0F172A]/90 backdrop-blur-2xl px-6 z-20 shadow-md">
+      <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 bg-[#0F172A]/90 backdrop-blur-2xl px-3 sm:px-6 z-20 shadow-md">
         
         {/* USER PROFILE INFO */}
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 font-bold text-lg text-white shadow-md shadow-emerald-500/20">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div className="relative flex-shrink-0">
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 font-bold text-base sm:text-lg text-white shadow-md shadow-emerald-500/20">
               {selectedFriend.fullName?.charAt(0)?.toUpperCase() || "U"}
             </div>
 
@@ -184,29 +184,29 @@ const Chatting = ({ selectedFriend, currentUser }) => {
             />
           </div>
 
-          <div>
-            <h2 className="text-base font-bold text-white font-heading tracking-wide">
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base font-bold text-white font-heading tracking-wide truncate">
               {selectedFriend.fullName || "User"}
             </h2>
 
-            <p className="text-xs font-medium text-slate-400 flex items-center gap-1.5 mt-0.5">
+            <p className="text-[10px] sm:text-xs font-medium text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
               <span className={`w-2 h-2 rounded-full ${isSelectedOnline ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
-              {isSelectedOnline ? "Active Now • End-to-End Encrypted" : "Offline"}
+              {isSelectedOnline ? "Active Now" : "Offline"}
             </p>
           </div>
         </div>
 
         {/* ACTION BUTTONS */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
               setActiveCallType("video");
               toast.success(`Starting HD Video call with ${selectedFriend.fullName || "user"}...`);
             }}
             title="Start HD Video Call"
-            className="p-2.5 rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
           >
-            <Video className="w-5 h-5" />
+            <Video className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={() => {
@@ -214,16 +214,16 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               toast.success(`Starting Voice call with ${selectedFriend.fullName || "user"}...`);
             }}
             title="Start Voice Call"
-            className="p-2.5 rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
           >
-            <Phone className="w-5 h-5" />
+            <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={() => toast("Search messages in this thread...")}
             title="Search Messages"
-            className="p-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
@@ -274,13 +274,13 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                   className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`relative max-w-[75%] sm:max-w-[65%] px-4 py-3 rounded-2xl shadow-lg transition-all ${
+                    className={`relative max-w-[82%] sm:max-w-[65%] px-3 py-2.5 sm:px-4 sm:py-3 rounded-2xl shadow-lg transition-all ${
                       isMe
                         ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-xs"
                         : "bg-slate-800/90 border border-white/10 text-slate-100 rounded-tl-xs backdrop-blur-md"
                     }`}
                   >
-                    <p className="pr-14 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+                    <p className="pr-14 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
                       {chat.message}
                     </p>
 
@@ -352,17 +352,17 @@ const Chatting = ({ selectedFriend, currentUser }) => {
       )}
 
       {/* ================= INPUT BAR ================= */}
-      <div className="shrink-0 p-4 bg-[#0F172A]/90 backdrop-blur-2xl border-t border-white/10 z-20">
-        <div className="flex items-center gap-3 max-w-6xl mx-auto">
+      <div className="shrink-0 p-3 sm:p-4 bg-[#0F172A]/90 backdrop-blur-2xl border-t border-white/10 z-20">
+        <div className="flex items-center gap-2 sm:gap-3 max-w-6xl mx-auto">
           
           <button
             onClick={() => {
               setShowAttachMenu(!showAttachMenu);
               setShowEmojiPicker(false);
             }}
-            className="p-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
           >
-            <Paperclip className="w-5 h-5" />
+            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
@@ -370,13 +370,13 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               setShowEmojiPicker(!showEmojiPicker);
               setShowAttachMenu(false);
             }}
-            className="p-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
           >
-            <Smile className="w-5 h-5" />
+            <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* INPUT FIELD */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative min-w-0">
             <input
               type="text"
               value={messageText}
@@ -386,8 +386,8 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                   handleSendMessage();
                 }
               }}
-              placeholder={`Write a message to ${selectedFriend.fullName || "User"}...`}
-              className="w-full h-12 pl-5 pr-4 rounded-2xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner font-sans"
+              placeholder={`Write to ${selectedFriend.fullName || "User"}...`}
+              className="w-full h-11 sm:h-12 pl-4 sm:pl-5 pr-3 sm:pr-4 rounded-xl sm:rounded-2xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner font-sans"
             />
           </div>
 
@@ -395,17 +395,17 @@ const Chatting = ({ selectedFriend, currentUser }) => {
           {messageText.trim() ? (
             <button
               onClick={handleSendMessage}
-              className="h-12 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-white font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+              className="h-11 sm:h-12 px-3 sm:px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-white font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
             >
-              <span>Send</span>
-              <Send className="w-4 h-4" />
+              <span className="text-xs sm:text-sm">Send</span>
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           ) : (
             <button
               onClick={() => toast("Voice note recording simulated.")}
-              className="p-3 rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
+              className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
             >
-              <Mic className="w-5 h-5" />
+              <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           )}
 

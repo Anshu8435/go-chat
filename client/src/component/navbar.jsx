@@ -29,16 +29,16 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           
           {/* BRAND LOGO */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
-              <MessageSquare className="w-6 h-6 text-white" />
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-[#0B0F19] rounded-full animate-pulse" />
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
+            <div className="relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
+              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-emerald-400 border-2 border-[#0B0F19] rounded-full animate-pulse" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent font-heading">
+            <div className="flex flex-col min-w-0">
+              <span className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent font-heading leading-none">
                 GoChat
               </span>
-              <span className="text-[10px] font-medium tracking-widest uppercase text-emerald-400/80 -mt-1">
+              <span className="text-[8px] sm:text-[10px] font-medium tracking-widest uppercase text-emerald-400/80 -mt-0.5 sm:-mt-1">
                 Luxury Messaging
               </span>
             </div>
