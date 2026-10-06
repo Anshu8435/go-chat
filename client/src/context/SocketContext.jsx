@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
 const getSocketUrl = () => {
   const host = typeof window !== "undefined" ? window.location.hostname : "";
   const isLocalhost = host === "localhost" || host === "127.0.0.1";
-
   const envUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL;
 
   if (isLocalhost) {
@@ -23,7 +23,6 @@ const getSocketUrl = () => {
 };
 
 const SOCKET_URL = getSocketUrl();
-
 const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
@@ -40,8 +39,9 @@ export const SocketProvider = ({ children }) => {
         socketRef.current = null;
       }
       activeTokenRef.current = null;
-      setSocket(null);
-      return;
+      // schedule state reset outside synchronous effect body
+      const t = setTimeout(() => setSocket(null), 0);
+      return () => clearTimeout(t);
     }
 
     if (socketRef.current && activeTokenRef.current === token) {
@@ -69,21 +69,14 @@ export const SocketProvider = ({ children }) => {
     activeTokenRef.current = token;
     setSocket(newSocket);
 
-    const handleGetOnlineUsers = (users) => {
-      setOnlineUsers(users);
-    };
-
+    const handleGetOnlineUsers = (users) => setOnlineUsers(users);
     newSocket.on("getOnlineUsers", handleGetOnlineUsers);
 
     return () => {
       newSocket.off("getOnlineUsers", handleGetOnlineUsers);
       newSocket.disconnect();
-      if (socketRef.current === newSocket) {
-        socketRef.current = null;
-      }
-      if (activeTokenRef.current === token) {
-        activeTokenRef.current = null;
-      }
+      if (socketRef.current === newSocket) socketRef.current = null;
+      if (activeTokenRef.current === token) activeTokenRef.current = null;
       setSocket(null);
     };
   }, [user, token]);

@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, MessageSquare, Shield, Sparkles, Globe, LogOut, User as UserIcon, Palette, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import GochatIcon from "../assets/Gochat.png";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -17,15 +16,17 @@ const themeNames = {
 };
 
 const Navbar = () => {
-  const [selectedTheme, setSelectedTheme] = useState("dark");
+  const [selectedTheme, setSelectedTheme] = useState(
+    () => localStorage.getItem("gochat-theme") || "dark"
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
+  // Apply saved theme to <html> once on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem("gochat-theme") || "dark";
-    setSelectedTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
+    document.documentElement.setAttribute("data-theme", selectedTheme);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleThemeChange = (e) => {

@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShieldCheck, Zap, Lock, Sparkles, MessageSquare, Video, PhoneCall, ArrowRight, CheckCircle2, Globe2 } from "lucide-react";
-import HeroImage from "../assets/heroimg.webp";
 
 const Herosection = () => {
   const navigate = useNavigate();

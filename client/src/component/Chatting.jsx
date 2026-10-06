@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { api } from "../context/AuthContext.jsx";
 import { useSocket } from "../context/SocketContext.jsx";
@@ -53,10 +53,11 @@ const Chatting = ({ selectedFriend, currentUser }) => {
       timer = setInterval(() => {
         setCallDuration((prev) => prev + 1);
       }, 1000);
-    } else {
-      setCallDuration(0);
     }
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      if (!activeCallType) setCallDuration(0);
+    };
   }, [activeCallType]);
 
   const formatTime = (seconds) => {
