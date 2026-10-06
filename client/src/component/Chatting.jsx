@@ -1,29 +1,28 @@
 import React, { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { api } from "../context/AuthContext.jsx";
 import { useSocket } from "../context/SocketContext.jsx";
 import {
   Video,
   Phone,
   Search,
-  MoreVertical,
   Paperclip,
   Smile,
   Mic,
   Send,
   CheckCheck,
   Lock,
-  ShieldCheck,
   Image as ImageIcon,
   FileText,
-  X,
   PhoneOff,
   MicOff,
   VideoOff,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const EMOJI_LIST = ["😊", "🚀", "❤️", "👍", "🔥", "🎉", "💬", "✨", "😍", "💯", "🙌", "😎"];
+const REACTIONS = ["✨", "🔥", "💬"];
 
 const Chatting = ({ selectedFriend, currentUser }) => {
   const [messages, setMessages] = useState([]);
@@ -31,9 +30,7 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   const [messageText, setMessageText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
-  
-  // Call Modals State
-  const [activeCallType, setActiveCallType] = useState(null); // 'video' | 'audio' | null
+  const [activeCallType, setActiveCallType] = useState(null);
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
@@ -41,16 +38,13 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   const messagesEndRef = useRef(null);
   const { socket, onlineUsers } = useSocket();
   const currentUserId = currentUser?._id || currentUser?.id;
-  
-  const isSelectedOnline = selectedFriend?._id
-    ? onlineUsers.includes(selectedFriend._id)
-    : false;
+
+  const isSelectedOnline = selectedFriend?._id ? onlineUsers.includes(selectedFriend._id) : false;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Call duration counter effect
   useEffect(() => {
     let timer;
     if (activeCallType) {
@@ -63,16 +57,12 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     return () => clearInterval(timer);
   }, [activeCallType]);
 
-  // Format call duration
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // ===============================
-  // FETCH CONVERSATION FROM MONGODB
-  // ===============================
   useEffect(() => {
     if (!selectedFriend?._id) return;
 
@@ -94,20 +84,15 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     fetchConversation();
   }, [selectedFriend?._id]);
 
-  // ===============================
-  // LISTEN FOR REAL-TIME MESSAGES
-  // ===============================
   useEffect(() => {
     if (!socket) return;
 
     const handleNewMessage = (newMsg) => {
       const isFromFriend =
-        newMsg.senderId === selectedFriend?._id &&
-        newMsg.receiverId === currentUserId;
+        newMsg.senderId === selectedFriend?._id && newMsg.receiverId === currentUserId;
 
       const isToFriend =
-        newMsg.senderId === currentUserId &&
-        newMsg.receiverId === selectedFriend?._id;
+        newMsg.senderId === currentUserId && newMsg.receiverId === selectedFriend?._id;
 
       if (isFromFriend || isToFriend) {
         setMessages((prev) => {
@@ -130,9 +115,6 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     scrollToBottom();
   }, [messages]);
 
-  // ===============================
-  // SEND MESSAGE
-  // ===============================
   const handleSendMessage = async () => {
     if (!messageText.trim() || !selectedFriend?._id) return;
 
@@ -164,39 +146,27 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   };
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#0B0F19] text-white">
-      
-      {/* ================= HEADER ================= */}
-      <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 bg-[#0F172A]/90 backdrop-blur-2xl px-3 sm:px-6 z-20 shadow-md">
-        
-        {/* USER PROFILE INFO */}
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#0B0E14] text-white">
+      <div className="nexus-chat-header">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="relative flex-shrink-0">
-            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 font-bold text-base sm:text-lg text-white shadow-md shadow-emerald-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF007A] via-[#9B5DE5] to-[#00F0FF] text-base font-bold text-white shadow-lg shadow-[#ff007a]/20 sm:h-12 sm:w-12">
               {selectedFriend.fullName?.charAt(0)?.toUpperCase() || "U"}
             </div>
-
-            {/* ONLINE DOT */}
-            <span
-              className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-slate-900 ${
-                isSelectedOnline ? "bg-emerald-400 shadow-[0_0_8px_#10B981]" : "bg-slate-500"
-              }`}
-            />
+            <span className={`presence-badge ${isSelectedOnline ? "online" : "offline"}`} />
           </div>
 
           <div className="min-w-0">
-            <h2 className="text-sm sm:text-base font-bold text-white font-heading tracking-wide truncate">
+            <h2 className="truncate text-sm font-bold text-white sm:text-base">
               {selectedFriend.fullName || "User"}
             </h2>
-
-            <p className="text-[10px] sm:text-xs font-medium text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
-              <span className={`w-2 h-2 rounded-full ${isSelectedOnline ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
-              {isSelectedOnline ? "Active Now" : "Offline"}
+            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-medium text-slate-400 sm:text-xs">
+              <span className={`h-2 w-2 rounded-full ${isSelectedOnline ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
+              {isSelectedOnline ? "Active now" : "Offline"}
             </p>
           </div>
         </div>
 
-        {/* ACTION BUTTONS */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
@@ -204,9 +174,9 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               toast.success(`Starting HD Video call with ${selectedFriend.fullName || "user"}...`);
             }}
             title="Start HD Video Call"
-            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
+            className="icon-button"
           >
-            <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Video className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
           <button
             onClick={() => {
@@ -214,81 +184,60 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               toast.success(`Starting Voice call with ${selectedFriend.fullName || "user"}...`);
             }}
             title="Start Voice Call"
-            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
+            className="icon-button"
           >
-            <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
-          <button
-            onClick={() => toast("Search messages in this thread...")}
-            title="Search Messages"
-            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
-          >
-            <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+          <button onClick={() => toast("Search messages in this thread...")} title="Search Messages" className="icon-button">
+            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
-
       </div>
 
-      {/* ================= CHAT MESSAGES BODY ================= */}
-      <div
-        className="flex-1 overflow-y-auto p-6 space-y-4 relative custom-scrollbar"
-        style={{
-          backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px)`,
-          backgroundSize: "28px 28px",
-        }}
-      >
-        
-        {/* SECURITY & ENCRYPTION BADGE */}
-        <div className="flex justify-center my-2">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/80 border border-white/10 text-slate-300 text-xs font-medium backdrop-blur-md shadow-lg">
-            <Lock className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Messages & calls are secured with 256-bit encryption.</span>
+      <div className="relative flex-1 overflow-y-auto p-6 custom-scrollbar">
+        <div className="mb-4 flex justify-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/80 px-4 py-2 text-[11px] font-medium text-slate-300 backdrop-blur-md">
+            <Lock className="h-3.5 w-3.5 text-cyan-300" />
+            Messages and calls are secured with 256-bit encryption.
           </div>
         </div>
 
         {loadingMessages ? (
-          <div className="flex flex-col items-center justify-center py-12 space-y-3">
-            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent" />
             <span className="text-xs text-slate-400">Loading conversation history...</span>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-3 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Sparkles className="w-8 h-8" />
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+              <Sparkles className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-bold text-white font-heading">No messages yet</h3>
-            <p className="text-xs text-slate-400 max-w-xs">
-              Say hello to start your conversation with {selectedFriend.fullName || "this contact"}!
+            <h3 className="text-lg font-bold text-white">No messages yet</h3>
+            <p className="mt-1 max-w-xs text-xs text-slate-400">
+              Say hello to start your conversation with {selectedFriend.fullName || "this contact"}.
             </p>
           </div>
         ) : (
           <div className="flex flex-col space-y-3">
             {messages.map((chat) => {
-              const isMe =
-                chat.senderId === currentUserId ||
-                chat.senderId?._id === currentUserId;
+              const isMe = chat.senderId === currentUserId || chat.senderId?._id === currentUserId;
 
               return (
-                <div
+                <motion.div
                   key={chat._id || chat.id}
+                  layout
+                  initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
                   className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                 >
-                  <div
-                    className={`relative max-w-[82%] sm:max-w-[65%] px-3 py-2.5 sm:px-4 sm:py-3 rounded-2xl shadow-lg transition-all ${
-                      isMe
-                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-xs"
-                        : "bg-slate-800/90 border border-white/10 text-slate-100 rounded-tl-xs backdrop-blur-md"
-                    }`}
+                  <motion.div
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    className={`message-bubble ${isMe ? "me" : "them"}`}
                   >
-                    <p className="pr-14 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
-                      {chat.message}
-                    </p>
+                    <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">{chat.message}</p>
 
-                    <div
-                      className={`absolute bottom-1.5 right-3 flex items-center gap-1 text-[10px] font-mono ${
-                        isMe ? "text-emerald-200" : "text-slate-400"
-                      }`}
-                    >
+                    <div className={`message-meta ${isMe ? "me" : "them"}`}>
                       <span>
                         {chat.createdAt
                           ? new Date(chat.createdAt).toLocaleTimeString([], {
@@ -297,28 +246,48 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                             })
                           : "Just now"}
                       </span>
-                      {isMe && (
-                        <CheckCheck className="w-3.5 h-3.5 text-emerald-300" />
-                      )}
+                      {isMe && <CheckCheck className="h-3.5 w-3.5 text-cyan-100" />}
                     </div>
-                  </div>
-                </div>
+
+                    <div className="message-reactions">
+                      {REACTIONS.map((reaction) => (
+                        <button key={reaction} type="button" className="reaction-pill">
+                          {reaction}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                </motion.div>
               );
             })}
+
+            {isSelectedOnline && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="typing-row"
+              >
+                <div className="typing-wave" aria-label="User is typing">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <span className="typing-label">{selectedFriend.fullName || "Contact"} is typing...</span>
+              </motion.div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
         )}
-
       </div>
 
-      {/* ================= EMOJI & ATTACHMENT POPOVERS ================= */}
       {showEmojiPicker && (
-        <div className="absolute bottom-24 left-6 z-30 p-3 rounded-2xl bg-slate-900 border border-white/10 shadow-2xl backdrop-blur-2xl grid grid-cols-6 gap-2">
+        <div className="absolute bottom-24 left-6 z-30 grid grid-cols-6 gap-2 rounded-2xl border border-white/10 bg-slate-950/90 p-3 shadow-2xl shadow-[#0a0f18]/90 backdrop-blur-2xl">
           {EMOJI_LIST.map((emoji) => (
             <button
               key={emoji}
               onClick={() => handleSelectEmoji(emoji)}
-              className="w-10 h-10 text-xl hover:bg-slate-800 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-xl transition hover:bg-slate-800"
             >
               {emoji}
             </button>
@@ -327,154 +296,137 @@ const Chatting = ({ selectedFriend, currentUser }) => {
       )}
 
       {showAttachMenu && (
-        <div className="absolute bottom-24 left-16 z-30 p-2 rounded-2xl bg-slate-900 border border-white/10 shadow-2xl backdrop-blur-2xl space-y-1 w-44">
+        <div className="absolute bottom-24 left-16 z-30 w-44 space-y-1 rounded-2xl border border-white/10 bg-slate-950/90 p-2 shadow-2xl shadow-[#0a0f18]/90 backdrop-blur-2xl">
           <button
             onClick={() => {
-              toast.success("Photo attachment option selected.");
+              toast.success("Photo attachment selected.");
               setShowAttachMenu(false);
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs text-slate-200 transition hover:bg-slate-800"
           >
-            <ImageIcon className="w-4 h-4 text-emerald-400" />
+            <ImageIcon className="h-4 w-4 text-cyan-300" />
             <span>Send Image</span>
           </button>
           <button
             onClick={() => {
-              toast.success("Document attachment option selected.");
+              toast.success("Document attachment selected.");
               setShowAttachMenu(false);
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs text-slate-200 transition hover:bg-slate-800"
           >
-            <FileText className="w-4 h-4 text-teal-400" />
+            <FileText className="h-4 w-4 text-pink-300" />
             <span>Send File</span>
           </button>
         </div>
       )}
 
-      {/* ================= INPUT BAR ================= */}
-      <div className="shrink-0 p-3 sm:p-4 bg-[#0F172A]/90 backdrop-blur-2xl border-t border-white/10 z-20">
-        <div className="flex items-center gap-2 sm:gap-3 max-w-6xl mx-auto">
-          
+      <div className="shrink-0 border-t border-white/10 bg-slate-950/80 p-3 backdrop-blur-2xl sm:p-4">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 sm:gap-3">
           <button
             onClick={() => {
-              setShowAttachMenu(!showAttachMenu);
+              setShowAttachMenu((prev) => !prev);
               setShowEmojiPicker(false);
             }}
-            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+            className="icon-button"
           >
-            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
           <button
             onClick={() => {
-              setShowEmojiPicker(!showEmojiPicker);
+              setShowEmojiPicker((prev) => !prev);
               setShowAttachMenu(false);
             }}
-            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+            className="icon-button"
           >
-            <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Smile className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
-          {/* INPUT FIELD */}
-          <div className="flex-1 relative min-w-0">
+          <div className="relative min-w-0 flex-1">
             <input
               type="text"
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSendMessage();
-                }
+                if (e.key === "Enter") handleSendMessage();
               }}
               placeholder={`Write to ${selectedFriend.fullName || "User"}...`}
-              className="w-full h-11 sm:h-12 pl-4 sm:pl-5 pr-3 sm:pr-4 rounded-xl sm:rounded-2xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner font-sans"
+              className="nexus-input"
             />
           </div>
 
-          {/* ACTION / SEND BUTTON */}
           {messageText.trim() ? (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleSendMessage}
-              className="h-11 sm:h-12 px-3 sm:px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-white font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FF007A] to-[#00F0FF] px-4 text-xs font-bold text-slate-950 shadow-lg shadow-[#ff007a]/30 sm:h-12 sm:px-6 sm:text-sm"
             >
-              <span className="text-xs sm:text-sm">Send</span>
-              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
+              <span>Send</span>
+              <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </motion.button>
           ) : (
-            <button
-              onClick={() => toast("Voice note recording simulated.")}
-              className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-white/10 transition-all cursor-pointer"
-            >
-              <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+            <button onClick={() => toast("Voice note recording simulated.")} className="icon-button">
+              <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           )}
-
         </div>
       </div>
 
-      {/* ================= LIVE CALL SIMULATION MODAL ================= */}
       {activeCallType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-2xl p-4">
-          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-white/15 p-8 shadow-2xl text-center space-y-6 relative overflow-hidden">
-            
-            {/* AMBIENT LIGHT */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-2xl">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-[32px] border border-white/10 bg-[#111827] p-8 text-center shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
+            <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-cyan-500/20 blur-[100px]" />
 
-            <div className="relative z-10 space-y-4">
+            <div className="relative z-10 space-y-5">
               <div className="relative inline-block">
-                <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-3xl text-white shadow-xl shadow-emerald-500/30">
+                <div className="flex h-24 w-24 items-center justify-center rounded-[30px] bg-gradient-to-br from-[#FF007A] via-[#9B5DE5] to-[#00F0FF] text-3xl font-bold text-white shadow-lg shadow-[#ff007a]/20">
                   {selectedFriend.fullName?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <span className="absolute bottom-0 right-0 w-6 h-6 bg-emerald-400 border-4 border-slate-900 rounded-full animate-pulse" />
+                <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-[#111827] bg-emerald-400 animate-pulse" />
               </div>
 
               <div>
-                <h3 className="text-2xl font-bold text-white font-heading">
-                  {selectedFriend.fullName || "User"}
-                </h3>
-                <p className="text-xs text-emerald-400 font-mono tracking-wider mt-1 uppercase">
+                <h3 className="text-2xl font-bold text-white">{selectedFriend.fullName || "User"}</h3>
+                <p className="mt-1 text-xs uppercase tracking-[0.28em] text-cyan-300">
                   {activeCallType === "video" ? "HD Video Call Connected" : "Encrypted Voice Call Connected"}
                 </p>
-                <p className="text-sm font-mono text-slate-400 mt-1">
-                  {formatTime(callDuration)}
-                </p>
+                <p className="mt-2 font-mono text-sm text-slate-400">{formatTime(callDuration)}</p>
               </div>
 
-              {/* VIDEO PLACEHOLDER BOX IF VIDEO CALL */}
               {activeCallType === "video" && (
-                <div className="h-44 rounded-2xl bg-slate-950 border border-white/10 flex items-center justify-center text-slate-500 text-xs relative overflow-hidden">
+                <div className="flex h-44 items-center justify-center rounded-2xl border border-white/10 bg-slate-950 text-slate-500">
                   {isVideoOff ? (
-                    <span>Camera Muted</span>
+                    <span>Camera muted</span>
                   ) : (
                     <div className="flex flex-col items-center gap-2">
-                      <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                        <Video className="w-6 h-6" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-400/15 text-cyan-300">
+                        <Video className="h-6 w-6" />
                       </div>
-                      <span className="text-slate-300 font-medium">Ultra-HD Encrypted Stream Active</span>
+                      <span className="text-slate-300">Ultra-HD encrypted stream active</span>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* CALL CONTROLS */}
-              <div className="flex items-center justify-center gap-4 pt-4">
+              <div className="flex items-center justify-center gap-4 pt-2">
                 <button
-                  onClick={() => setIsMicMuted(!isMicMuted)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                    isMicMuted ? "bg-red-500/20 border-red-500/40 text-red-400" : "bg-slate-800 border-white/10 text-slate-200 hover:text-white"
+                  onClick={() => setIsMicMuted((prev) => !prev)}
+                  className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition ${
+                    isMicMuted ? "border-red-500/40 bg-red-500/20 text-red-400" : "border-white/10 bg-slate-800 text-slate-200"
                   }`}
                 >
-                  {isMicMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                  {isMicMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
                 </button>
 
                 {activeCallType === "video" && (
                   <button
-                    onClick={() => setIsVideoOff(!isVideoOff)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                      isVideoOff ? "bg-red-500/20 border-red-500/40 text-red-400" : "bg-slate-800 border-white/10 text-slate-200 hover:text-white"
+                    onClick={() => setIsVideoOff((prev) => !prev)}
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition ${
+                      isVideoOff ? "border-red-500/40 bg-red-500/20 text-red-400" : "border-white/10 bg-slate-800 text-slate-200"
                     }`}
                   >
-                    {isVideoOff ? <VideoOff className="w-6 h-6" /> : <Video className="w-6 h-6" />}
+                    {isVideoOff ? <VideoOff className="h-6 w-6" /> : <Video className="h-6 w-6" />}
                   </button>
                 )}
 
@@ -483,18 +435,15 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                     setActiveCallType(null);
                     toast.error("Call ended");
                   }}
-                  className="p-4 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 transition-all cursor-pointer"
+                  className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500 text-white shadow-lg shadow-red-500/25 transition hover:bg-red-600"
                 >
-                  <PhoneOff className="w-6 h-6" />
+                  <PhoneOff className="h-6 w-6" />
                 </button>
               </div>
-
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 };

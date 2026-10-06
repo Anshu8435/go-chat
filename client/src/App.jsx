@@ -9,6 +9,7 @@ import Login from "./pages/login.jsx";
 import Navbar from "./component/navbar.jsx";
 import Register from "./pages/register.jsx";
 import ChatPage from "./pages/chatPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
 import { Loader2 } from "lucide-react";
 
 const Home = () => {
@@ -20,16 +21,15 @@ const Home = () => {
   );
 };
 
-// Protected Route Component for pages requiring authentication
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-[#232029]">
+      <div className="flex min-h-screen w-full items-center justify-center bg-[#0B0E14]">
         <div className="flex flex-col items-center gap-3 text-white">
-          <Loader2 className="w-10 h-10 animate-spin text-[#25D366]" />
-          <p className="font-medium text-gray-300">Loading GoChat...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-[#FF007A]" />
+          <p className="font-medium text-slate-300">Loading NexusChat...</p>
         </div>
       </div>
     );
@@ -42,16 +42,15 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Public Only Route Component for Login/Register (redirects to Chat if already logged in)
 const PublicOnlyRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-[#232029]">
+      <div className="flex min-h-screen w-full items-center justify-center bg-[#0B0E14]">
         <div className="flex flex-col items-center gap-3 text-white">
-          <Loader2 className="w-10 h-10 animate-spin text-[#25D366]" />
-          <p className="font-medium text-gray-300">Loading...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-[#00F0FF]" />
+          <p className="font-medium text-slate-300">Loading...</p>
         </div>
       </div>
     );
@@ -67,10 +66,8 @@ const PublicOnlyRoute = ({ children }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Home Page */}
       <Route path="/" element={<Home />} />
 
-      {/* Auth Pages (Public Only) */}
       <Route
         path="/login"
         element={
@@ -88,7 +85,6 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Protected Chat Page */}
       <Route
         path="/chatPage"
         element={
@@ -98,7 +94,15 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Catch-all fallback */}
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -113,9 +117,10 @@ const App = () => {
           toastOptions={{
             duration: 3500,
             style: {
-              background: "#332F3A",
+              background: "#111827",
               color: "#fff",
               borderRadius: "12px",
+              border: "1px solid rgba(255,255,255,0.08)",
             },
           }}
         />
