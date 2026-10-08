@@ -4,7 +4,6 @@ import {
   Camera,
   Eye,
   EyeOff,
-  Image as ImageIcon,
   Lock,
   LogOut,
   Mail,
@@ -15,7 +14,6 @@ import {
   Trash2,
   Upload,
   UserRound,
-  FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -26,13 +24,13 @@ const DashboardPage = () => {
 
   const fileInputRef = useRef(null);
 
-  const [profileData, setProfileData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    bio: "",
-    profilePic: "",
-  });
+  const [profileData, setProfileData] = useState(() => ({
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    bio: user?.bio || "",
+    profilePic: user?.profilePic || "",
+  }));
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -46,8 +44,10 @@ const DashboardPage = () => {
   const [savingPassword, setSavingPassword] = useState(false);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
+  // Sync form when user object updates (after login or profile save)
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProfileData({
         fullName: user.fullName || "",
         email: user.email || "",
@@ -56,7 +56,8 @@ const DashboardPage = () => {
         profilePic: user.profilePic || "",
       });
     }
-  }, [user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email, user?.fullName, user?.phone, user?.bio, user?.profilePic]);
 
   const initials = useMemo(() => {
     if (!profileData.fullName) return "U";
