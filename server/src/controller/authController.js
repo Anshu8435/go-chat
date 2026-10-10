@@ -9,6 +9,15 @@ const generateToken = (userId) => {
   return jwt.sign({ id: userId }, secret, { expiresIn: "7d" });
 };
 
+const setTokenCookie = (res, token) => {
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+};
+
 const formatUserResponse = (user) => ({
   _id: user._id,
   fullName: user.fullName,
@@ -51,6 +60,7 @@ export const RegisterUser = async (req, res, next) => {
     });
 
     const token = generateToken(newUser._id);
+    setTokenCookie(res, token);
 
     return res.status(201).json({
       message: "Account registered successfully!",
@@ -87,6 +97,7 @@ export const LoginUser = async (req, res, next) => {
     }
 
     const token = generateToken(user._id);
+    setTokenCookie(res, token);
 
     return res.status(200).json({
       message: "Login successful!",
@@ -125,18 +136,10 @@ export const SendLoginOtp = async (req, res, next) => {
     await Otp.deleteMany({ email: normalizedEmail, type: "login" });
 
     // Store new OTP
-    await Otp.create({
-      email: normalizedEmail,
-      otp,
-      type: "login",
-    });
+    await Otp.create({ email: normalizedEmail, otp, type: "login" });
 
     // Send email
-    await sendOtpEmail({
-      email: normalizedEmail,
-      otp,
-      type: "login",
-    });
+    await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
 
     return res.status(200).json({
       success: true,
@@ -185,6 +188,7 @@ export const VerifyLoginOtp = async (req, res, next) => {
     }
 
     const token = generateToken(user._id);
+    setTokenCookie(res, token);
 
     return res.status(200).json({
       message: "Logged in successfully with OTP!",
@@ -221,17 +225,9 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
     // Invalidate existing reset OTPs for this email
     await Otp.deleteMany({ email: normalizedEmail, type: "forgot-password" });
 
-    await Otp.create({
-      email: normalizedEmail,
-      otp,
-      type: "forgot-password",
-    });
+    await Otp.create({ email: normalizedEmail, otp, type: "forgot-password" });
 
-    await sendOtpEmail({
-      email: normalizedEmail,
-      otp,
-      type: "forgot-password",
-    });
+    await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
 
     return res.status(200).json({
       success: true,

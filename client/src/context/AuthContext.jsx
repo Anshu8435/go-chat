@@ -1,101 +1,116 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-// ── Session storage helpers (defined BEFORE the axios instance so the
-//    request interceptor can safely reference them at call time) ──────────────
-const getSessionItem = (key) => {
+// ── Storage helpers (checks localStorage first, falls back to sessionStorage) ──
+const getStoredItem = (key) => {
   if (typeof window === "undefined") return null;
   try {
-    return sessionStorage.getItem(key);
-  } catch (error) {
+    return localStorage.getItem(key) || sessionStorage.getItem(key);
+  } catch {
     return null;
   }
 };
 
-const setSessionItem = (key, value) => {
+const setStoredItem = (key, value) => {
   if (typeof window === "undefined") return;
   try {
+    localStorage.setItem(key, value);
     sessionStorage.setItem(key, value);
-  } catch (error) {
-    // Ignore storage quota/session issues
-  }
+  } catch { /* ignore */ }
 };
 
-const removeSessionItem = (key) => {
+const removeStoredItem = (key) => {
   if (typeof window === "undefined") return;
   try {
+    localStorage.removeItem(key);
     sessionStorage.removeItem(key);
-  } catch (error) {
-    // Ignore storage quota/session issues
-  }
+  } catch { /* ignore */ }
 };
 
-// ── API base URL ─────────────────────────────────────────────────────────────
+// ── API base URL ──────────────────────────────────────────────────────────────
 const getApiBaseUrl = () => {
   const host = typeof window !== "undefined" ? window.location.hostname : "";
   const isLocalhost = host === "localhost" || host === "127.0.0.1";
-
   const envUrl = import.meta.env.VITE_API_URL;
 
-  // Local development
   if (isLocalhost) {
-    if (envUrl && envUrl.includes(":4501")) {
-      return envUrl.replace(":4501", ":4500");
-    }
+    if (envUrl && envUrl.includes(":4501")) return envUrl.replace(":4501", ":4500");
     return envUrl || "http://localhost:4500";
   }
-
-  // Production deployment (e.g., Vercel)
-  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
-    return envUrl;
-  }
-
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) return envUrl;
   return "";
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
-// ── Axios instance ───────────────────────────────────────────────────────────
-// Configure default axios instance
+// ── Axios instance ────────────────────────────────────────────────────────────
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
 
-// Add request interceptor to attach token from sessionStorage
+// Attach Authorization header from storage
 api.interceptors.request.use((config) => {
-  const token = getSessionItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  const token = getStoredItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+// Response interceptor: on 401 unauthorized, clear state and redirect to login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const url = error.config?.url || "";
+      const isAuthEndpoint =
+        url.includes("/auth/login") ||
+        url.includes("/auth/register") ||
+        url.includes("/auth/verify-login-otp");
+
+      if (!isAuthEndpoint) {
+        removeStoredItem("token");
+        removeStoredItem("user");
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ── Context ───────────────────────────────────────────────────────────────────
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const savedUser = getSessionItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    const saved = getStoredItem("user");
+    return saved ? JSON.parse(saved) : null;
   });
-  const [token, setToken] = useState(() => getSessionItem("token") || null);
+  const [token, setToken] = useState(() => getStoredItem("token") || null);
   const [loading, setLoading] = useState(true);
+
+  const logout = useCallback(async () => {
+    try { await api.post("/auth/logout"); } catch { /* ignore */ }
+    setToken(null);
+    setUser(null);
+    removeStoredItem("token");
+    removeStoredItem("user");
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const storedToken = getSessionItem("token");
+      const storedToken = getStoredItem("token");
       if (storedToken) {
         try {
           const res = await api.get("/auth/me");
           if (res.data?.user) {
             setUser(res.data.user);
-            setSessionItem("user", JSON.stringify(res.data.user));
+            setStoredItem("user", JSON.stringify(res.data.user));
           }
-        } catch (error) {
-          console.error("Session verification failed:", error);
+        } catch {
           logout();
         }
       } else {
@@ -103,33 +118,26 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     };
-
     checkAuth();
-  }, []);
+  }, [logout]);
 
   const login = async (email, password) => {
     const response = await api.post("/auth/login", { email, password });
     const { token: newToken, user: userData } = response.data;
-
     setToken(newToken);
     setUser(userData);
-
-    setSessionItem("token", newToken);
-    setSessionItem("user", JSON.stringify(userData));
-
+    setStoredItem("token", newToken);
+    setStoredItem("user", JSON.stringify(userData));
     return response.data;
   };
 
   const register = async (formData) => {
     const response = await api.post("/auth/register", formData);
     const { token: newToken, user: userData } = response.data;
-
     setToken(newToken);
     setUser(userData);
-
-    setSessionItem("token", newToken);
-    setSessionItem("user", JSON.stringify(userData));
-
+    setStoredItem("token", newToken);
+    setStoredItem("user", JSON.stringify(userData));
     return response.data;
   };
 
@@ -141,13 +149,10 @@ export const AuthProvider = ({ children }) => {
   const verifyLoginOtp = async (email, otp) => {
     const response = await api.post("/auth/verify-login-otp", { email, otp });
     const { token: newToken, user: userData } = response.data;
-
     setToken(newToken);
     setUser(userData);
-
-    setSessionItem("token", newToken);
-    setSessionItem("user", JSON.stringify(userData));
-
+    setStoredItem("token", newToken);
+    setStoredItem("user", JSON.stringify(userData));
     return response.data;
   };
 
@@ -157,20 +162,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const resetPasswordWithOtp = async (email, otp, newPassword) => {
-    const response = await api.post("/auth/forgot-password/reset", {
-      email,
-      otp,
-      newPassword,
-    });
+    const response = await api.post("/auth/forgot-password/reset", { email, otp, newPassword });
     return response.data;
   };
 
   const forgotPassword = async (email, otpOrNewPassword, maybeNewPassword) => {
-    // If 3 arguments or 2nd is OTP, call reset with OTP
     if (maybeNewPassword !== undefined) {
       return resetPasswordWithOtp(email, otpOrNewPassword, maybeNewPassword);
     }
-    // Fallback
     const response = await api.post("/auth/forgot-password", {
       email,
       newPassword: otpOrNewPassword,
@@ -181,33 +180,14 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (formData) => {
     const response = await api.put("/users/profile", formData);
     const updatedUser = response.data.user;
-
     setUser(updatedUser);
-    setSessionItem("user", JSON.stringify(updatedUser));
-
+    setStoredItem("user", JSON.stringify(updatedUser));
     return response.data;
   };
 
   const changePassword = async (currentPassword, newPassword) => {
-    const response = await api.put("/users/password", {
-      currentPassword,
-      newPassword,
-    });
-
+    const response = await api.put("/users/password", { currentPassword, newPassword });
     return response.data;
-  };
-
-  const logout = async () => {
-    try {
-      await api.post("/auth/logout");
-    } catch (err) {
-      // Ignore network errors on logout
-    } finally {
-      setToken(null);
-      setUser(null);
-      removeSessionItem("token");
-      removeSessionItem("user");
-    }
   };
 
   return (
@@ -236,8 +216,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
