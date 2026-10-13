@@ -15,6 +15,8 @@ import AuthRouter from "./src/router/auth.route.js";
 import PublicRouter from "./src/router/public.route.js";
 import UserRouter from "./src/router/user.route.js";
 import MessageRouter from "./src/router/message.route.js";
+import ContactRouter from "./src/router/contact.route.js";
+import ConversationRouter from "./src/router/conversation.route.js";
 import path from "node:path";
 import fs from "node:fs";
 import { app, server } from "./src/socket/socket.js";
@@ -72,6 +74,13 @@ app.use("/api/users", UserRouter);
 
 app.use("/messages", MessageRouter);
 app.use("/api/messages", MessageRouter);
+
+// Contact & Conversation Routes (Personal contacts, selective online, message requests)
+app.use("/contacts", ContactRouter);
+app.use("/api/contacts", ContactRouter);
+
+app.use("/conversations", ConversationRouter);
+app.use("/api/conversations", ConversationRouter);
 
 app.get("/", (req, res) => {
   res.send("GoChat Server is running");
