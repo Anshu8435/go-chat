@@ -24,6 +24,13 @@ import {
   Maximize2,
   Loader2,
   ArrowLeft,
+  ShieldAlert,
+  Check,
+  Trash2,
+  Ban,
+  MoreVertical,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -55,12 +62,23 @@ const formatBytes = (bytes) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 };
 
-const Chatting = ({ selectedFriend, currentUser, onBack }) => {
+const Chatting = ({
+  selectedFriend,
+  currentUser,
+  onBack,
+  onAcceptRequest,
+  onDeleteRequest,
+  onBlockUser,
+  onUnblockUser,
+  onRemoveContact,
+  onAddContact,
+}) => {
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [activeCallType, setActiveCallType] = useState(null); // "audio" | "video"
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -68,12 +86,20 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
   const [selectedAttachment, setSelectedAttachment] = useState(null);
   const [viewingImage, setViewingImage] = useState(null);
   const [isSending, setIsSending] = useState(false);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
+
+  // Status flags
+  const [conversationStatus, setConversationStatus] = useState(
+    selectedFriend?.status || (selectedFriend?.isRequest ? "pending" : "accepted")
+  );
+  const [isBlocked, setIsBlocked] = useState(Boolean(selectedFriend?.isBlocked));
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
   const emojiRef = useRef(null);
   const attachRef = useRef(null);
+  const moreMenuRef = useRef(null);
 
   const { socket, onlineUsers } = useSocket();
   const currentUserId = currentUser?._id || currentUser?.id;
@@ -95,6 +121,9 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
       }
       if (attachRef.current && !attachRef.current.contains(e.target)) {
         setShowAttachMenu(false);
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target)) {
+        setShowMoreMenu(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
@@ -121,9 +150,14 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Fetch conversation history
+  // Fetch conversation history and mark unread messages as read
   useEffect(() => {
     if (!selectedFriend?._id) return;
+
+    setConversationStatus(
+      selectedFriend?.status || (selectedFriend?.isRequest ? "pending" : "accepted")
+    );
+    setIsBlocked(Boolean(selectedFriend?.isBlocked));
 
     const fetchConversation = async () => {
       try {
@@ -132,6 +166,14 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
         if (res.data?.messages) {
           setMessages(res.data.messages);
         }
+        if (res.data?.isBlocked !== undefined) {
+          setIsBlocked(Boolean(res.data.isBlocked));
+        }
+        if (res.data?.conversationStatus) {
+          setConversationStatus(res.data.conversationStatus);
+        }
+        // Mark messages as read
+        api.put(`/messages/read/${selectedFriend._id}`).catch(() => {});
       } catch (err) {
         console.error("Failed to load messages:", err);
         toast.error("Could not load chat history.");
@@ -141,39 +183,193 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
     };
 
     fetchConversation();
-  }, [selectedFriend?._id]);
+  }, [selectedFriend?._id, selectedFriend?.status, selectedFriend?.isRequest, selectedFriend?.isBlocked]);
 
-  // Socket.IO message listener
+  // Socket.IO message listeners
   useEffect(() => {
     if (!socket) return;
 
     const handleNewMessage = (newMsg) => {
       const isFromFriend =
-        newMsg.senderId === selectedFriend?._id && newMsg.receiverId === currentUserId;
+        String(newMsg.senderId) === String(selectedFriend?._id) &&
+        String(newMsg.receiverId) === String(currentUserId);
 
       const isToFriend =
-        newMsg.senderId === currentUserId && newMsg.receiverId === selectedFriend?._id;
+        String(newMsg.senderId) === String(currentUserId) &&
+        String(newMsg.receiverId) === String(selectedFriend?._id);
 
       if (isFromFriend || isToFriend) {
         setMessages((prev) => {
           if (prev.some((m) => m._id === newMsg._id)) return prev;
           return [...prev, newMsg];
         });
+
+        // If message is from friend and we are actively looking at chat, mark read immediately
+        if (isFromFriend) {
+          api.put(`/messages/read/${selectedFriend._id}`).catch(() => {});
+        }
+      }
+    };
+
+    const handleMessagesRead = (payload) => {
+      if (String(payload?.readerId) === String(selectedFriend?._id)) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            String(m.senderId) === String(currentUserId) ? { ...m, isRead: true } : m
+          )
+        );
+      }
+    };
+
+    const handleUserBlocked = (payload) => {
+      if (String(payload?.targetUserId) === String(selectedFriend?._id)) {
+        setIsBlocked(true);
+      }
+    };
+
+    const handleUserBlockedBy = (payload) => {
+      if (String(payload?.blockerId) === String(selectedFriend?._id)) {
+        setIsBlocked(true);
+      }
+    };
+
+    const handleUserUnblocked = (payload) => {
+      if (String(payload?.targetUserId) === String(selectedFriend?._id)) {
+        setIsBlocked(false);
+      }
+    };
+
+    const handleRequestAccepted = (payload) => {
+      if (String(payload?.partnerId) === String(selectedFriend?._id)) {
+        setConversationStatus("accepted");
       }
     };
 
     socket.on("newMessage", handleNewMessage);
     socket.on("receive_message", handleNewMessage);
+    socket.on("messagesRead", handleMessagesRead);
+    socket.on("userBlocked", handleUserBlocked);
+    socket.on("userBlockedBy", handleUserBlockedBy);
+    socket.on("userUnblocked", handleUserUnblocked);
+    socket.on("requestAccepted", handleRequestAccepted);
 
     return () => {
       socket.off("newMessage", handleNewMessage);
       socket.off("receive_message", handleNewMessage);
+      socket.off("messagesRead", handleMessagesRead);
+      socket.off("userBlocked", handleUserBlocked);
+      socket.off("userBlockedBy", handleUserBlockedBy);
+      socket.off("userUnblocked", handleUserUnblocked);
+      socket.off("requestAccepted", handleRequestAccepted);
     };
   }, [socket, selectedFriend?._id, currentUserId]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Accept Message Request handler
+  const handleAcceptRequest = async () => {
+    try {
+      setIsProcessingAction(true);
+      const convId = selectedFriend.conversationId;
+      if (convId) {
+        await api.post(`/conversations/requests/${convId}/accept`);
+      } else {
+        // Fallback: add contact which automatically accepts
+        await api.post("/contacts/add", { contactId: selectedFriend._id });
+      }
+      setConversationStatus("accepted");
+      toast.success(`Message request from ${selectedFriend.fullName} accepted!`);
+      if (onAcceptRequest) {
+        onAcceptRequest(selectedFriend);
+      }
+    } catch (err) {
+      console.error("Accept request error:", err);
+      toast.error(err.response?.data?.message || "Failed to accept request.");
+    } finally {
+      setIsProcessingAction(false);
+    }
+  };
+
+  // Delete Message Request handler
+  const handleDeleteRequest = async () => {
+    try {
+      setIsProcessingAction(true);
+      const convId = selectedFriend.conversationId;
+      if (convId) {
+        await api.post(`/conversations/requests/${convId}/delete`);
+      }
+      toast.success("Message request deleted.");
+      if (onDeleteRequest) {
+        onDeleteRequest(selectedFriend);
+      }
+    } catch (err) {
+      console.error("Delete request error:", err);
+      toast.error(err.response?.data?.message || "Failed to delete request.");
+    } finally {
+      setIsProcessingAction(false);
+    }
+  };
+
+  // Block user handler
+  const handleBlockUser = async () => {
+    try {
+      setIsProcessingAction(true);
+      await api.post("/conversations/block", { targetUserId: selectedFriend._id });
+      setIsBlocked(true);
+      toast.success(`${selectedFriend.fullName} has been blocked.`);
+      if (onBlockUser) {
+        onBlockUser(selectedFriend);
+      }
+    } catch (err) {
+      console.error("Block user error:", err);
+      toast.error(err.response?.data?.message || "Failed to block user.");
+    } finally {
+      setIsProcessingAction(false);
+      setShowMoreMenu(false);
+    }
+  };
+
+  // Unblock user handler
+  const handleUnblockUser = async () => {
+    try {
+      setIsProcessingAction(true);
+      await api.post("/conversations/unblock", { targetUserId: selectedFriend._id });
+      setIsBlocked(false);
+      toast.success(`${selectedFriend.fullName} unblocked.`);
+      if (onUnblockUser) {
+        onUnblockUser(selectedFriend);
+      }
+    } catch (err) {
+      console.error("Unblock user error:", err);
+      toast.error(err.response?.data?.message || "Failed to unblock user.");
+    } finally {
+      setIsProcessingAction(false);
+      setShowMoreMenu(false);
+    }
+  };
+
+  // Add / Remove from Personal Contacts
+  const handleToggleContact = async () => {
+    try {
+      setIsProcessingAction(true);
+      if (selectedFriend.isContact) {
+        await api.delete(`/contacts/${selectedFriend._id}`);
+        toast.success(`${selectedFriend.fullName} removed from contacts.`);
+        if (onRemoveContact) onRemoveContact(selectedFriend);
+      } else {
+        await api.post("/contacts/add", { contactId: selectedFriend._id });
+        toast.success(`${selectedFriend.fullName} added to your contacts.`);
+        if (onAddContact) onAddContact(selectedFriend);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update contact.");
+    } finally {
+      setIsProcessingAction(false);
+      setShowMoreMenu(false);
+    }
+  };
 
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
@@ -182,6 +378,10 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
 
     if (!textToSend && !hasAttachment) return;
     if (!selectedFriend?._id) return;
+    if (isBlocked) {
+      toast.error("You cannot send messages to a blocked contact.");
+      return;
+    }
 
     const attachmentPayload = selectedAttachment
       ? {
@@ -210,6 +410,9 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
           if (prev.some((m) => m._id === savedMsg._id)) return prev;
           return [...prev, savedMsg];
         });
+        if (res.data?.conversationStatus) {
+          setConversationStatus(res.data.conversationStatus);
+        }
       }
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -241,7 +444,6 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
     }
 
     setShowAttachMenu(false);
-
     const isImage = type === "image" || file.type.startsWith("image/");
 
     if (isImage) {
@@ -251,22 +453,17 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
         img.onload = () => {
           try {
             const canvas = document.createElement("canvas");
-            const maxDim = 1280;
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-              if (width > maxDim) {
+            let { width, height } = img;
+            const maxDim = 1200;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
                 height = Math.round((height * maxDim) / width);
                 width = maxDim;
-              }
-            } else {
-              if (height > maxDim) {
+              } else {
                 width = Math.round((width * maxDim) / height);
                 height = maxDim;
               }
             }
-
             canvas.width = width;
             canvas.height = height;
             const ctx = canvas.getContext("2d");
@@ -322,6 +519,10 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
 
     event.target.value = "";
   };
+
+  const isIncomingPendingRequest =
+    Boolean(selectedFriend.isRequest) ||
+    (conversationStatus === "pending" && !selectedFriend.isContact);
 
   return (
     <div
@@ -411,17 +612,132 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             <ThemeQuickSwitch compact />
           </div>
 
-          {/* Full Studio link */}
-          <Link
-            to="/settings"
-            title="Open Theme Studio"
-            className="hidden md:inline-flex icon-button h-8 w-8 sm:h-9 sm:w-9 rounded-xl"
-            aria-label="Theme Studio"
-          >
-            <Palette className="h-4 w-4" />
-          </Link>
+          {/* More Options Dropdown */}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              type="button"
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              title="More options"
+              className="icon-button h-8 w-8 sm:h-9 sm:w-9 rounded-xl"
+              aria-label="More options"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </button>
+
+            {showMoreMenu && (
+              <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-1.5 shadow-2xl backdrop-blur-xl z-40">
+                <button
+                  type="button"
+                  onClick={handleToggleContact}
+                  disabled={isProcessingAction}
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition text-left"
+                >
+                  {selectedFriend.isContact ? (
+                    <>
+                      <UserMinus className="h-4 w-4 text-amber-500" />
+                      Remove from Contacts
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 text-[var(--primary)]" />
+                      Add to Contacts
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={isBlocked ? handleUnblockUser : handleBlockUser}
+                  disabled={isProcessingAction}
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition text-left"
+                >
+                  <Ban className="h-4 w-4" />
+                  {isBlocked ? "Unblock Contact" : "Block User"}
+                </button>
+
+                <div className="my-1 border-t border-[var(--border)]" />
+
+                <Link
+                  to="/settings"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-muted)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-main)] transition"
+                >
+                  <Palette className="h-4 w-4" />
+                  Theme Studio
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Message Request Management Bar (if incoming request) */}
+      {isIncomingPendingRequest && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 sm:p-4 bg-[var(--bg-surface)] border-b border-[var(--border)] shadow-sm"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 max-w-2xl mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex-shrink-0">
+                <ShieldAlert className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] font-heading">
+                  Incoming Message Request
+                </p>
+                <p className="text-[11px] text-[var(--text-muted)]">
+                  {selectedFriend.fullName} is not in your contacts. Choose how to handle this request:
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <button
+                type="button"
+                disabled={isProcessingAction}
+                onClick={handleAcceptRequest}
+                className="theme-button-primary px-3.5 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+              >
+                <Check className="h-3.5 w-3.5" />
+                Accept
+              </button>
+              <button
+                type="button"
+                disabled={isProcessingAction}
+                onClick={handleDeleteRequest}
+                className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] hover:bg-[var(--bg-surface)] text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] transition disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </button>
+              <button
+                type="button"
+                disabled={isProcessingAction}
+                onClick={handleBlockUser}
+                className="px-3 py-1.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-semibold transition disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                <Ban className="h-3.5 w-3.5" />
+                Block
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Blocked notice bar */}
+      {isBlocked && (
+        <div className="p-2.5 bg-red-500/10 border-b border-red-500/20 text-center flex items-center justify-center gap-3 text-xs text-red-400 font-semibold">
+          <span>🚫 You have blocked this user.</span>
+          <button
+            type="button"
+            onClick={handleUnblockUser}
+            className="underline hover:text-red-300 transition"
+          >
+            Unblock now
+          </button>
+        </div>
+      )}
 
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto p-2.5 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
@@ -537,7 +853,14 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
                     }`}
                   >
                     <span>{timeStr}</span>
-                    {isMe && <CheckCheck className="h-3.5 w-3.5" />}
+                    {isMe && (
+                      <CheckCheck
+                        className={`h-3.5 w-3.5 ${
+                          msg.isRead ? "text-cyan-300 font-bold" : "opacity-75"
+                        }`}
+                        title={msg.isRead ? "Read" : "Delivered"}
+                      />
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -580,115 +903,146 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
         </div>
       )}
 
-      {/* Message Composer */}
-      <div className="message-composer-bar">
-        <form onSubmit={handleSendMessage} className="relative flex items-center gap-1.5 sm:gap-2">
-          {/* Hidden file inputs */}
-          <input
-            type="file"
-            ref={imageInputRef}
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => handleFileSelection(e, "image")}
-          />
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={(e) => handleFileSelection(e, "file")}
-          />
-
-          {/* Attachment button */}
-          <div className="relative" ref={attachRef}>
-            <button
-              type="button"
-              onClick={() => setShowAttachMenu(!showAttachMenu)}
-              className="icon-button h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
-              title="Attach File or Image"
-            >
-              <Paperclip className="h-4 w-4" />
-            </button>
-
-            {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-2 w-44 sm:w-48 max-w-[calc(100vw-2.5rem)] rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-2xl backdrop-blur-xl z-30">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAttachMenu(false);
-                    imageInputRef.current?.click();
-                  }}
-                  className="flex w-full items-center gap-2 sm:gap-2.5 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
-                >
-                  <ImageIcon className="h-4 w-4 text-[var(--primary)] flex-shrink-0" />
-                  <span className="truncate">Image or Photo</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAttachMenu(false);
-                    fileInputRef.current?.click();
-                  }}
-                  className="flex w-full items-center gap-2 sm:gap-2.5 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
-                >
-                  <FileText className="h-4 w-4 text-[var(--secondary)] flex-shrink-0" />
-                  <span className="truncate">Document / File</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Emoji button */}
-          <div className="relative" ref={emojiRef}>
-            <button
-              type="button"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="icon-button h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
-              title="Add Emoji"
-            >
-              <Smile className="h-4 w-4" />
-            </button>
-
-            {showEmojiPicker && (
-              <div className="absolute bottom-full left-0 sm:left-auto sm:right-0 mb-2 w-[calc(100vw-2.5rem)] max-w-[280px] rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-3 shadow-2xl backdrop-blur-xl z-30">
-                <div className="grid grid-cols-4 gap-2 text-xl">
-                  {EMOJI_LIST.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => handleSelectEmoji(emoji)}
-                      className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl hover:bg-[var(--bg-surface)] hover:scale-110 transition"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Input Field */}
-          <div className="relative flex-1 min-w-0">
-            <input
-              type="text"
-              placeholder={`Message ${selectedFriend.fullName || "contact"}...`}
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none transition shadow-inner"
-            />
-          </div>
-
-          {/* Send Button */}
+      {/* Message Composer or Pending Request Notice */}
+      {isIncomingPendingRequest ? (
+        <div className="message-composer-bar text-center py-4 px-4 bg-[var(--bg-surface)]/80">
+          <p className="text-xs text-[var(--text-muted)] mb-2 font-medium">
+            Accept this message request to reply to <span className="font-bold text-[var(--text-main)]">{selectedFriend.fullName}</span>.
+          </p>
           <button
-            type="submit"
-            disabled={(!messageText.trim() && !selectedAttachment) || isSending}
-            className="theme-button-primary inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-            title="Send Message"
+            type="button"
+            onClick={handleAcceptRequest}
+            disabled={isProcessingAction}
+            className="theme-button-primary px-5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-2"
           >
-            {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <Check className="h-4 w-4" />
+            Accept Request
           </button>
-        </form>
-      </div>
+        </div>
+      ) : isBlocked ? (
+        <div className="message-composer-bar text-center py-4 px-4 bg-red-500/5">
+          <p className="text-xs text-red-400 font-semibold mb-2">
+            You cannot send messages while this contact is blocked.
+          </p>
+          <button
+            type="button"
+            onClick={handleUnblockUser}
+            disabled={isProcessingAction}
+            className="px-4 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-xs font-bold hover:border-[var(--primary)] transition"
+          >
+            Unblock {selectedFriend.fullName}
+          </button>
+        </div>
+      ) : (
+        <div className="message-composer-bar">
+          <form onSubmit={handleSendMessage} className="relative flex items-center gap-1.5 sm:gap-2">
+            {/* Hidden file inputs */}
+            <input
+              type="file"
+              ref={imageInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleFileSelection(e, "image")}
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={(e) => handleFileSelection(e, "file")}
+            />
+
+            {/* Attachment button */}
+            <div className="relative" ref={attachRef}>
+              <button
+                type="button"
+                onClick={() => setShowAttachMenu(!showAttachMenu)}
+                className="icon-button h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
+                title="Attach File or Image"
+              >
+                <Paperclip className="h-4 w-4" />
+              </button>
+
+              {showAttachMenu && (
+                <div className="absolute bottom-full left-0 mb-2 w-44 sm:w-48 max-w-[calc(100vw-2.5rem)] rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-2xl backdrop-blur-xl z-30">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAttachMenu(false);
+                      imageInputRef.current?.click();
+                    }}
+                    className="flex w-full items-center gap-2 sm:gap-2.5 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
+                  >
+                    <ImageIcon className="h-4 w-4 text-[var(--primary)] flex-shrink-0" />
+                    <span className="truncate">Image or Photo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAttachMenu(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="flex w-full items-center gap-2 sm:gap-2.5 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
+                  >
+                    <FileText className="h-4 w-4 text-[var(--secondary)] flex-shrink-0" />
+                    <span className="truncate">Document / File</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Emoji button */}
+            <div className="relative" ref={emojiRef}>
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="icon-button h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
+                title="Add Emoji"
+              >
+                <Smile className="h-4 w-4" />
+              </button>
+
+              {showEmojiPicker && (
+                <div className="absolute bottom-full left-0 sm:left-auto sm:right-0 mb-2 w-[calc(100vw-2.5rem)] max-w-[280px] rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-3 shadow-2xl backdrop-blur-xl z-30">
+                  <div className="grid grid-cols-4 gap-2 text-xl">
+                    {EMOJI_LIST.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleSelectEmoji(emoji)}
+                        className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl hover:bg-[var(--bg-surface)] hover:scale-110 transition"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input Field */}
+            <div className="relative flex-1 min-w-0">
+              <input
+                type="text"
+                placeholder={`Message ${selectedFriend.fullName || "contact"}...`}
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none transition shadow-inner"
+              />
+            </div>
+
+            {/* Send Button */}
+            <button
+              type="submit"
+              disabled={(!messageText.trim() && !selectedAttachment) || isSending}
+              className="theme-button-primary inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              title="Send Message"
+            >
+              {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Simulated Call Modal Overlay */}
       <AnimatePresence>
