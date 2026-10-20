@@ -232,14 +232,18 @@ const Navbar = () => {
                   style={{ borderColor: "var(--line)" }}
                 >
                   <div
-                    className="w-9 h-9 rounded-full border flex items-center justify-center font-bold text-xs shadow-inner"
+                    className="w-9 h-9 rounded-full border flex items-center justify-center font-bold text-xs shadow-inner overflow-hidden"
                     style={{
                       background: "var(--surface)",
                       borderColor: "var(--line)",
                       color: "var(--accent-a)",
                     }}
                   >
-                    {user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="w-4 h-4" />}
+                    {user?.profilePic ? (
+                      <img src={user.profilePic} alt={user.fullName || "User"} className="w-full h-full object-cover" />
+                    ) : (
+                      user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="w-4 h-4" />
+                    )}
                   </div>
                   <button
                     onClick={handleLogout}
