@@ -68,10 +68,30 @@ export const SocketProvider = ({ children }) => {
         setOnlineUsers(users.map(String));
       }
     };
+
+    const handlePresenceChanged = (payload) => {
+      if (!payload || !payload.userId) return;
+      const sId = String(payload.userId);
+      setOnlineUsers((prev) => {
+        if (payload.isOnline) {
+          if (prev.includes(sId)) return prev;
+          return [...prev, sId];
+        } else {
+          return prev.filter((id) => id !== sId);
+        }
+      });
+    };
+
     newSocket.on("getOnlineUsers", handleGetOnlineUsers);
+    newSocket.on("getAuthorizedOnlineUsers", handleGetOnlineUsers);
+    newSocket.on("contactPresenceChanged", handlePresenceChanged);
+    newSocket.on("userPresenceChanged", handlePresenceChanged);
 
     return () => {
       newSocket.off("getOnlineUsers", handleGetOnlineUsers);
+      newSocket.off("getAuthorizedOnlineUsers", handleGetOnlineUsers);
+      newSocket.off("contactPresenceChanged", handlePresenceChanged);
+      newSocket.off("userPresenceChanged", handlePresenceChanged);
       newSocket.disconnect();
       if (socketRef.current === newSocket) socketRef.current = null;
       if (activeTokenRef.current === token) activeTokenRef.current = null;
