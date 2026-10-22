@@ -1,9 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronDown, MessageSquare, Shield, Sparkles, Globe, LogOut, User as UserIcon, Palette, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import GochatIcon from "../assets/Gochat.png";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+
+const themeNames = {
+  dark: "Dark Obsidian",
+  light: "Clean Light",
+  emerald: "Emerald Cyber",
+  luxury: "Gold Luxury",
+  violet: "Violet Pulse",
+  sunset: "Sunset Glow",
+  forest: "Forest Mist",
+  ocean: "Ocean Drift",
+};
 
 const Navbar = () => {
   const [selectedTheme, setSelectedTheme] = useState("dark");
@@ -11,11 +22,20 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("gochat-theme") || "dark";
+    setSelectedTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
   const handleThemeChange = (e) => {
     const theme = e.target.value;
     setSelectedTheme(theme);
+    localStorage.setItem("gochat-theme", theme);
     document.documentElement.setAttribute("data-theme", theme);
   };
+
+  const activeThemeLabel = themeNames[selectedTheme] || "Dark Obsidian";
 
   const handleLogout = async () => {
     await logout();
@@ -24,7 +44,13 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-[#0B0F19]/85 border-b border-white/10 transition-all">
+    <header
+      className="sticky top-0 z-50 w-full border-b transition-all backdrop-blur-xl"
+      style={{
+        background: "var(--bg-page)",
+        borderColor: "var(--line)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -45,82 +71,133 @@ const Navbar = () => {
           </Link>
 
           {/* DESKTOP NAVIGATION */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-900/60 p-1.5 rounded-full border border-white/10 backdrop-blur-md">
+          <nav
+            className="hidden md:flex items-center gap-1 p-1.5 rounded-full border backdrop-blur-md"
+            style={{
+              background: "var(--surface-soft)",
+              borderColor: "var(--line)",
+            }}
+          >
             
             {/* Features Dropdown */}
             <div className="relative group px-1">
-              <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-full hover:bg-white/5 transition-all">
+              <button
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all"
+                style={{ color: "var(--text-soft)" }}
+              >
                 <span>Features</span>
-                <ChevronDown className="w-4 h-4 text-slate-400 group-hover:rotate-180 transition-transform duration-300" />
+                <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" style={{ color: "var(--text-soft)" }} />
               </button>
 
               {/* Glass Dropdown Menu */}
-              <div className="absolute left-0 mt-3 w-64 p-2 rounded-2xl bg-[#0F172A]/95 backdrop-blur-2xl border border-white/10 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-50">
+              <div
+                className="absolute left-0 mt-3 w-64 p-2 rounded-2xl backdrop-blur-2xl border shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-50"
+                style={{
+                  background: "var(--bg-panel-strong)",
+                  borderColor: "var(--line)",
+                  boxShadow: "0 20px 50px var(--shadow-glow)",
+                }}
+              >
                 <a
                   href="#privacy"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-400 text-slate-300 text-sm font-medium transition-colors"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                  style={{ color: "var(--text-soft)" }}
                 >
-                  <Shield className="w-4 h-4 text-emerald-400" />
+                  <Shield className="w-4 h-4" style={{ color: "var(--accent-a)" }} />
                   <div>
-                    <p className="font-semibold text-white">End-to-End Privacy</p>
-                    <p className="text-xs text-slate-400">Zero data retention policy</p>
+                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>End-to-End Privacy</p>
+                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>Zero data retention policy</p>
                   </div>
                 </a>
                 <a
                   href="#calling"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-400 text-slate-300 text-sm font-medium transition-colors"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                  style={{ color: "var(--text-soft)" }}
                 >
-                  <Globe className="w-4 h-4 text-teal-400" />
+                  <Globe className="w-4 h-4" style={{ color: "var(--accent-b)" }} />
                   <div>
-                    <p className="font-semibold text-white">HD Voice & Video</p>
-                    <p className="text-xs text-slate-400">Low latency worldwide</p>
+                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>HD Voice & Video</p>
+                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>Low latency worldwide</p>
                   </div>
                 </a>
                 <a
                   href="#ai"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-400 text-slate-300 text-sm font-medium transition-colors"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                  style={{ color: "var(--text-soft)" }}
                 >
-                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <Sparkles className="w-4 h-4" style={{ color: "var(--accent-c)" }} />
                   <div>
-                    <p className="font-semibold text-white">AI Assistant</p>
-                    <p className="text-xs text-slate-400">Smart chat automation</p>
+                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>AI Assistant</p>
+                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>Smart chat automation</p>
                   </div>
                 </a>
               </div>
             </div>
 
+            <Link
+              to="/contact"
+              className="px-4 py-2 text-sm font-medium rounded-full transition-all"
+              style={{ color: "var(--text-soft)" }}
+            >
+              Contact
+            </Link>
             <a
               href="#privacy"
-              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-full hover:bg-white/5 transition-all"
+              className="px-4 py-2 text-sm font-medium rounded-full transition-all"
+              style={{ color: "var(--text-soft)" }}
             >
               Privacy
             </a>
             <a
               href="#security"
-              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-full hover:bg-white/5 transition-all"
+              className="px-4 py-2 text-sm font-medium rounded-full transition-all"
+              style={{ color: "var(--text-soft)" }}
             >
               Security
             </a>
             <a
               href="#apps"
-              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-full hover:bg-white/5 transition-all"
+              className="px-4 py-2 text-sm font-medium rounded-full transition-all"
+              style={{ color: "var(--text-soft)" }}
             >
               Apps
             </a>
 
             {/* Theme Selector */}
-            <div className="flex items-center gap-1 px-3 py-1.5 bg-white/5 rounded-full border border-white/5 text-xs text-slate-300">
-              <Palette className="w-3.5 h-3.5 text-emerald-400" />
+            <div
+              className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs"
+              style={{
+                background: "var(--surface-soft)",
+                borderColor: "var(--line)",
+                color: "var(--text)",
+              }}
+            >
+              <Palette className="w-3.5 h-3.5" style={{ color: "var(--accent-a)" }} />
               <select
                 value={selectedTheme}
                 onChange={handleThemeChange}
-                className="bg-transparent border-none text-xs text-slate-200 focus:outline-none cursor-pointer pr-1"
+                className="cursor-pointer border-none bg-transparent text-xs focus:outline-none pr-1"
+                style={{ color: "var(--text)" }}
+                aria-label="Theme selector"
               >
                 <option value="dark" className="bg-slate-900 text-slate-200">Dark Obsidian</option>
+                <option value="light" className="bg-slate-900 text-slate-200">Clean Light</option>
                 <option value="emerald" className="bg-slate-900 text-slate-200">Emerald Cyber</option>
                 <option value="luxury" className="bg-slate-900 text-slate-200">Gold Luxury</option>
-                <option value="light" className="bg-slate-900 text-slate-200">Clean Light</option>
+                <option value="violet" className="bg-slate-900 text-slate-200">Violet Pulse</option>
+                <option value="sunset" className="bg-slate-900 text-slate-200">Sunset Glow</option>
+                <option value="forest" className="bg-slate-900 text-slate-200">Forest Mist</option>
+                <option value="ocean" className="bg-slate-900 text-slate-200">Ocean Drift</option>
               </select>
+              <span
+                className="rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]"
+                style={{
+                  background: "var(--surface)",
+                  color: "var(--text-strong)",
+                }}
+              >
+                {activeThemeLabel}
+              </span>
             </div>
           </nav>
 
@@ -130,7 +207,11 @@ const Navbar = () => {
               <div className="flex items-center gap-3">
                 <Link
                   to="/chatPage"
-                  className="relative group overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 hover:-translate-y-0.5"
+                  className="relative group overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(135deg, var(--accent-a), var(--accent-b))",
+                    boxShadow: "0 15px 30px var(--shadow-glow)",
+                  }}
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
@@ -138,14 +219,33 @@ const Navbar = () => {
                   </span>
                 </Link>
 
-                <div className="flex items-center gap-2 pl-3 border-l border-white/10">
-                  <div className="w-9 h-9 rounded-full bg-slate-800 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs shadow-inner">
+                <Link
+                  to="/dashboard"
+                  className="px-4 py-2 text-sm font-medium rounded-full transition-all"
+                  style={{ color: "var(--text-soft)" }}
+                >
+                  Dashboard
+                </Link>
+
+                <div
+                  className="flex items-center gap-2 pl-3 border-l"
+                  style={{ borderColor: "var(--line)" }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-full border flex items-center justify-center font-bold text-xs shadow-inner"
+                    style={{
+                      background: "var(--surface)",
+                      borderColor: "var(--line)",
+                      color: "var(--accent-a)",
+                    }}
+                  >
                     {user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="w-4 h-4" />}
                   </div>
                   <button
                     onClick={handleLogout}
                     title="Logout"
-                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+                    className="p-2 rounded-full transition-colors"
+                    style={{ color: "var(--text-soft)" }}
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -155,13 +255,18 @@ const Navbar = () => {
               <div className="flex items-center gap-3">
                 <Link
                   to="/login"
-                  className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                  className="px-5 py-2.5 text-sm font-semibold rounded-full transition-all"
+                  style={{ color: "var(--text-soft)" }}
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="relative group overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 hover:-translate-y-0.5"
+                  className="relative group overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(135deg, var(--accent-a), var(--accent-b))",
+                    boxShadow: "0 15px 30px var(--shadow-glow)",
+                  }}
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     Get Started Free
@@ -175,7 +280,12 @@ const Navbar = () => {
           <div className="flex sm:hidden items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:text-white"
+              className="p-2.5 rounded-xl border transition-colors"
+              style={{
+                background: "var(--surface)",
+                borderColor: "var(--line)",
+                color: "var(--text-soft)",
+              }}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -184,22 +294,36 @@ const Navbar = () => {
 
         {/* MOBILE MENU DROPDOWN */}
         {mobileMenuOpen && (
-          <div className="sm:hidden p-4 mb-4 rounded-2xl bg-[#0F172A] border border-white/10 space-y-3">
-            <a href="#privacy" className="block px-4 py-2 text-slate-300 hover:text-emerald-400 text-sm font-medium">Privacy</a>
-            <a href="#security" className="block px-4 py-2 text-slate-300 hover:text-emerald-400 text-sm font-medium">Security</a>
-            <a href="#apps" className="block px-4 py-2 text-slate-300 hover:text-emerald-400 text-sm font-medium">Apps</a>
-            <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+          <div
+            className="sm:hidden p-4 mb-4 rounded-2xl border space-y-3"
+            style={{
+              background: "var(--bg-panel)",
+              borderColor: "var(--line)",
+            }}
+          >
+            <a href="#privacy" className="block px-4 py-2 text-sm font-medium" style={{ color: "var(--text-soft)" }}>Privacy</a>
+            <a href="#security" className="block px-4 py-2 text-sm font-medium" style={{ color: "var(--text-soft)" }}>Security</a>
+            <a href="#apps" className="block px-4 py-2 text-sm font-medium" style={{ color: "var(--text-soft)" }}>Apps</a>
+            <div className="pt-3 border-t flex flex-col gap-2" style={{ borderColor: "var(--line)" }}>
               {isAuthenticated ? (
                 <>
                   <Link
                     to="/chatPage"
-                    className="w-full text-center py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm"
+                    className="w-full text-center py-2.5 rounded-xl font-semibold text-sm text-white"
+                    style={{
+                      background: "linear-gradient(135deg, var(--accent-a), var(--accent-b))",
+                    }}
                   >
                     Open Chat
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-center py-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-semibold text-sm"
+                    className="w-full text-center py-2.5 rounded-xl border font-semibold text-sm"
+                    style={{
+                      background: "rgba(239, 68, 68, 0.08)",
+                      borderColor: "rgba(239,68,68,0.25)",
+                      color: "#f87171",
+                    }}
                   >
                     Logout
                   </button>
@@ -208,13 +332,20 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/login"
-                    className="w-full text-center py-2.5 rounded-xl bg-slate-800 text-slate-200 font-semibold text-sm"
+                    className="w-full text-center py-2.5 rounded-xl font-semibold text-sm"
+                    style={{
+                      background: "var(--surface)",
+                      color: "var(--text)",
+                    }}
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
-                    className="w-full text-center py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm"
+                    className="w-full text-center py-2.5 rounded-xl font-semibold text-sm text-white"
+                    style={{
+                      background: "linear-gradient(135deg, var(--accent-a), var(--accent-b))",
+                    }}
                   >
                     Get Started Free
                   </Link>

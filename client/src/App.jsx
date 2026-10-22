@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -7,8 +7,11 @@ import { SocketProvider } from "./context/SocketContext.jsx";
 import Herosection from "./component/herosection.jsx";
 import Login from "./pages/login.jsx";
 import Navbar from "./component/navbar.jsx";
+import Footer from "./component/Footer.jsx";
 import Register from "./pages/register.jsx";
+import ContactPage from "./pages/contactPage.jsx";
 import ChatPage from "./pages/chatPage.jsx";
+import DashboardPage from "./pages/DashboardPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import { Loader2 } from "lucide-react";
 
@@ -17,6 +20,7 @@ const Home = () => {
     <>
       <Navbar />
       <Herosection />
+      <Footer />
     </>
   );
 };
@@ -26,10 +30,10 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-[#0B0E14]">
-        <div className="flex flex-col items-center gap-3 text-white">
-          <Loader2 className="h-10 w-10 animate-spin text-[#FF007A]" />
-          <p className="font-medium text-slate-300">Loading NexusChat...</p>
+      <div className="flex min-h-screen w-full items-center justify-center theme-shell">
+        <div className="flex flex-col items-center gap-3" style={{ color: "var(--text)" }}>
+          <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--accent-a)" }} />
+          <p className="font-medium theme-muted">Loading NexusChat...</p>
         </div>
       </div>
     );
@@ -47,10 +51,10 @@ const PublicOnlyRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-[#0B0E14]">
-        <div className="flex flex-col items-center gap-3 text-white">
-          <Loader2 className="h-10 w-10 animate-spin text-[#00F0FF]" />
-          <p className="font-medium text-slate-300">Loading...</p>
+      <div className="flex min-h-screen w-full items-center justify-center theme-shell">
+        <div className="flex flex-col items-center gap-3" style={{ color: "var(--text)" }}>
+          <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--accent-b)" }} />
+          <p className="font-medium theme-muted">Loading...</p>
         </div>
       </div>
     );
@@ -86,10 +90,24 @@ const AppRoutes = () => {
       />
 
       <Route
+        path="/contact"
+        element={<ContactPage />}
+      />
+
+      <Route
         path="/chatPage"
         element={
           <ProtectedRoute>
             <ChatPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
           </ProtectedRoute>
         }
       />
@@ -108,10 +126,20 @@ const AppRoutes = () => {
   );
 };
 
+const ThemeManager = () => {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("gochat-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
+  return null;
+};
+
 const App = () => {
   return (
     <AuthProvider>
       <SocketProvider>
+        <ThemeManager />
         <Toaster
           position="top-center"
           toastOptions={{

@@ -8,7 +8,10 @@ const Herosection = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-[#0B0F19] text-white flex flex-col justify-center">
+    <div
+      className="relative min-h-[calc(100vh-80px)] overflow-hidden flex flex-col justify-center"
+      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+    >
       
       {/* AMBIENT BACKGROUND GLOW LIGHTS */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" />
@@ -85,6 +88,14 @@ const Herosection = () => {
               >
                 <Lock className="w-4 h-4 text-emerald-400" />
                 <span>Create Free Account</span>
+              </button>
+
+              <button
+                onClick={() => navigate("/contact")}
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3.5 sm:px-7 sm:py-4 rounded-full border border-white/10 bg-white/5 text-slate-200 hover:text-white font-semibold text-sm sm:text-base backdrop-blur-md transition-all duration-300 hover:border-cyan-500/40 cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4 text-cyan-400" />
+                <span>Contact Us</span>
               </button>
             </motion.div>
 
