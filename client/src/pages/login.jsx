@@ -87,7 +87,10 @@ const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#0B0F19] text-white flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden font-sans">
+    <div
+      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden font-sans"
+      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+    >
       
       {/* AMBIENT BACKGROUND GLOW LIGHTS */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none" />
@@ -164,12 +167,19 @@ const Login = () => {
           transition={{ duration: 0.7 }}
           className="lg:col-span-6 w-full max-w-md mx-auto"
         >
-          <div className="rounded-3xl bg-slate-900/80 backdrop-blur-2xl border border-white/12 p-8 sm:p-10 shadow-2xl shadow-emerald-950/30">
+          <div
+            className="rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-2xl"
+            style={{
+              background: "var(--bg-panel)",
+              border: "1px solid var(--line)",
+              boxShadow: "0 25px 60px var(--shadow-glow)",
+            }}
+          >
             
             {/* CARD HEADER */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold text-white font-heading">Sign In</h1>
+                <h1 className="text-3xl font-bold font-heading" style={{ color: "var(--text-strong)" }}>Sign In</h1>
                 <Link to="/" className="text-xs text-slate-400 hover:text-emerald-400 transition-colors">
                   ← Back to Home
                 </Link>
@@ -194,7 +204,8 @@ const Login = () => {
                     value={loginData.email}
                     onChange={handleChange}
                     required
-                    className="w-full h-13 rounded-2xl bg-slate-800/60 border border-white/10 pl-12 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner"
+                    className="w-full h-13 rounded-2xl pl-12 pr-4 text-sm transition-all shadow-inner theme-input"
+                    style={{ borderColor: "var(--line)" }}
                   />
                 </div>
               </div>
@@ -222,7 +233,8 @@ const Login = () => {
                     value={loginData.password}
                     onChange={handleChange}
                     required
-                    className="w-full h-13 rounded-2xl bg-slate-800/60 border border-white/10 pl-12 pr-12 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800/90 transition-all shadow-inner"
+                    className="w-full h-13 rounded-2xl pl-12 pr-12 text-sm transition-all shadow-inner theme-input"
+                    style={{ borderColor: "var(--line)" }}
                   />
                   <button
                     type="button"
@@ -276,8 +288,15 @@ const Login = () => {
       </div>
 
       {showForgotPassword && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/95 p-6 shadow-2xl shadow-emerald-950/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm" style={{ background: "rgba(2,6,23,0.7)" }}>
+          <div
+            className="w-full max-w-md rounded-3xl p-6 shadow-2xl"
+            style={{
+              background: "var(--bg-panel-strong)",
+              border: "1px solid var(--line)",
+              boxShadow: "0 25px 60px var(--shadow-glow)",
+            }}
+          >
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-white font-heading">Reset Password</h2>

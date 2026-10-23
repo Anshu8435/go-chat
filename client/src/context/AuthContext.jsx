@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:4500";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4500";
 
 // Configure default axios instance
 export const api = axios.create({
@@ -116,6 +116,25 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+  const updateProfile = async (formData) => {
+    const response = await api.put("/users/profile", formData);
+    const updatedUser = response.data.user;
+
+    setUser(updatedUser);
+    setSessionItem("user", JSON.stringify(updatedUser));
+
+    return response.data;
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    const response = await api.put("/users/password", {
+      currentPassword,
+      newPassword,
+    });
+
+    return response.data;
+  };
+
   const logout = async () => {
     try {
       await api.post("/auth/logout");
@@ -139,6 +158,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         forgotPassword,
+        updateProfile,
+        changePassword,
         logout,
       }}
     >
