@@ -265,6 +265,14 @@ const DashboardPage = () => {
             </Link>
 
             <Link
+              to="/settings?tab=privacy"
+              className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-semibold text-[var(--text-main)] transition hover:border-[var(--primary)]"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 inline mr-1 text-emerald-400" />
+              Privacy & Status
+            </Link>
+
+            <Link
               to="/settings"
               className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-semibold text-[var(--text-main)] transition hover:border-[var(--primary)]"
             >
