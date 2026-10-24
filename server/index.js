@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./src/config/db.js";
+import { findAvailablePort } from "./src/config/port.js";
 import AuthRouter from "./src/router/auth.route.js";
 import PublicRouter from "./src/router/public.route.js";
 import UserRouter from "./src/router/user.route.js";
@@ -77,7 +78,7 @@ app.use((err, req, res, next) => {
 
 // Connect DB first, then start listening for HTTP & Socket.IO requests
 const startServer = async () => {
-  const PORT = process.env.PORT || 4500;
+  const preferredPort = Number(process.env.PORT || 4500);
 
   try {
     await connectDB();
@@ -85,19 +86,32 @@ const startServer = async () => {
     console.error("Database connection attempt failed:", err.message || err);
   }
 
-  server.on("error", (err) => {
-    if (err.code === "EADDRINUSE") {
-      console.error(`\n⚠️  Port ${PORT} is already in use!`);
-      console.error(`Another server process is already running on port ${PORT}.`);
-      console.error(`Please stop the existing terminal process or kill the PID using port ${PORT}.\n`);
-    } else {
-      console.error("Server error:", err);
-    }
-  });
+  try {
+    const chosenPort = await findAvailablePort(preferredPort, 20);
+    process.env.PORT = String(chosenPort);
 
-  server.listen(PORT, () => {
-    console.log(`Server & Socket.IO running on port ${PORT}`);
-  });
+    if (chosenPort !== preferredPort) {
+      console.warn(
+        `Port ${preferredPort} is busy. Starting GoChat on ${chosenPort} instead.`
+      );
+    }
+
+    server.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.error(`Port ${chosenPort} is still busy after checking. Please free the process and restart.`);
+      } else {
+        console.error("Server error:", err);
+      }
+      process.exit(1);
+    });
+
+    server.listen(chosenPort, "0.0.0.0", () => {
+      console.log(`Server & Socket.IO running on port ${chosenPort}`);
+    });
+  } catch (error) {
+    console.error("Unable to start server on an available port:", error.message);
+    process.exit(1);
+  }
 };
 
 startServer();
