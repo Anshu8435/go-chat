@@ -55,7 +55,7 @@ const ChatPage = () => {
   });
 
   return (
-    <div className="nexus-chat-shell">
+    <div className="nexus-chat-shell" style={{ background: "var(--bg-page)", color: "var(--text)" }}>
       <div className="nexus-orb orb-one" />
       <div className="nexus-orb orb-two" />
 
@@ -78,12 +78,12 @@ const ChatPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="profile-chip">
+              <Link to="/dashboard" className="profile-chip transition hover:border-cyan-400/40 hover:bg-cyan-400/10">
                 <div className="profile-avatar">
                   {user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="h-3.5 w-3.5" />}
                 </div>
                 <span className="truncate">{user?.fullName?.split(" ")[0] || "User"}</span>
-              </div>
+              </Link>
 
               <button onClick={handleLogout} title="Logout" className="icon-button danger" aria-label="Logout">
                 <LogOut className="h-4 w-4" />

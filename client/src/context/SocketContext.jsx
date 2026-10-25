@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:4500";
+
 const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
@@ -31,7 +33,7 @@ export const SocketProvider = ({ children }) => {
       socketRef.current.disconnect();
     }
 
-    const newSocket = io("http://localhost:4500", {
+    const newSocket = io(SOCKET_URL, {
       autoConnect: true,
       transports: ["websocket", "polling"],
       auth: { token },

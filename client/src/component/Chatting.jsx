@@ -34,8 +34,10 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [selectedAttachment, setSelectedAttachment] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
   const { socket, onlineUsers } = useSocket();
   const currentUserId = currentUser?._id || currentUser?.id;
 
@@ -116,16 +118,20 @@ const Chatting = ({ selectedFriend, currentUser }) => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!messageText.trim() || !selectedFriend?._id) return;
+    const textToSend = (messageText || "").trim();
+    const attachmentText = selectedAttachment ? `Shared file: ${selectedAttachment.name}` : "";
+    const finalMessage = textToSend || attachmentText;
 
-    const textToSend = messageText.trim();
+    if (!finalMessage || !selectedFriend?._id) return;
+
     setMessageText("");
+    setSelectedAttachment(null);
     setShowEmojiPicker(false);
     setShowAttachMenu(false);
 
     try {
       const res = await api.post(`/messages/send/${selectedFriend._id}`, {
-        message: textToSend,
+        message: finalMessage,
       });
 
       if (res.data?.message) {
@@ -145,8 +151,28 @@ const Chatting = ({ selectedFriend, currentUser }) => {
     setMessageText((prev) => prev + emoji);
   };
 
+  const handleFileSelection = (event, type) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const fileObject = {
+      name: file.name,
+      size: file.size,
+      type,
+      originalType: file.type,
+    };
+
+    setSelectedAttachment(fileObject);
+    setShowAttachMenu(false);
+    event.target.value = "";
+  };
+
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#0B0E14] text-white">
+    <div
+      className="relative flex h-full w-full flex-col overflow-hidden"
+      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+    >
       <div className="nexus-chat-header">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="relative flex-shrink-0">
@@ -299,8 +325,8 @@ const Chatting = ({ selectedFriend, currentUser }) => {
         <div className="absolute bottom-24 left-16 z-30 w-44 space-y-1 rounded-2xl border border-white/10 bg-slate-950/90 p-2 shadow-2xl shadow-[#0a0f18]/90 backdrop-blur-2xl">
           <button
             onClick={() => {
-              toast.success("Photo attachment selected.");
-              setShowAttachMenu(false);
+              fileInputRef.current?.setAttribute("accept", "image/*");
+              fileInputRef.current?.click();
             }}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs text-slate-200 transition hover:bg-slate-800"
           >
@@ -309,8 +335,11 @@ const Chatting = ({ selectedFriend, currentUser }) => {
           </button>
           <button
             onClick={() => {
-              toast.success("Document attachment selected.");
-              setShowAttachMenu(false);
+              fileInputRef.current?.setAttribute(
+                "accept",
+                ".pdf,.doc,.docx,.txt,.zip,.rar,.xls,.xlsx,.ppt,.pptx,image/*"
+              );
+              fileInputRef.current?.click();
             }}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs text-slate-200 transition hover:bg-slate-800"
           >
@@ -320,7 +349,30 @@ const Chatting = ({ selectedFriend, currentUser }) => {
         </div>
       )}
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        onChange={(e) => handleFileSelection(e, "file")}
+      />
+
       <div className="shrink-0 border-t border-white/10 bg-slate-950/80 p-3 backdrop-blur-2xl sm:p-4">
+        {selectedAttachment && (
+          <div className="mx-auto mb-3 flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
+            <div className="flex min-w-0 items-center gap-2">
+              <FileText className="h-4 w-4 text-cyan-300" />
+              <span className="truncate">{selectedAttachment.name}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedAttachment(null)}
+              className="text-cyan-200 hover:text-white"
+            >
+              Remove
+            </button>
+          </div>
+        )}
+
         <div className="mx-auto flex max-w-6xl items-center gap-2 sm:gap-3">
           <button
             onClick={() => {
