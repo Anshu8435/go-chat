@@ -36,7 +36,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0B0E14] text-white">
+    <div className="relative min-h-screen overflow-hidden theme-shell" style={{ color: "var(--text)" }}>
       <div className="pointer-events-none absolute inset-0 opacity-70" style={ambientGlow} />
 
       <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -61,6 +61,7 @@ const SettingsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="nexus-panel p-5 sm:p-6"
+            style={{ background: "var(--bg-panel)", border: "1px solid var(--line)" }}
           >
             <div className="mb-6 flex items-center justify-between gap-3">
               <div>
@@ -179,6 +180,7 @@ const SettingsPage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
             className="nexus-panel p-5"
+            style={{ background: "var(--bg-panel)", border: "1px solid var(--line)" }}
           >
             <div className="mb-5 flex items-center justify-between">
               <div>
