@@ -1,7 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4500";
+const getApiBaseUrl = () => {
+  if (typeof window === "undefined") {
+    return "http://localhost:4501";
+  }
+
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    return "http://localhost:4501";
+  }
+
+  return window.location.origin;
+};
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || getApiBaseUrl();
 
 // Configure default axios instance
 export const api = axios.create({

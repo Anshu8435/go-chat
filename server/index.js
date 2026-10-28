@@ -12,18 +12,34 @@ import UserRouter from "./src/router/user.route.js";
 import MessageRouter from "./src/router/message.route.js";
 import { app, server } from "./src/socket/socket.js";
 
-// Middleware - CORS configuration to support all localhost ports in dev
+// Middleware - CORS configuration to support local development and deployed Vercel frontends
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:4173",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
+  "https://go-chat-jade.vercel.app",
+];
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (
+
+      const isLocalhostOrigin =
         origin.startsWith("http://localhost:") ||
-        origin.startsWith("http://127.0.0.1:")
-      ) {
+        origin.startsWith("http://127.0.0.1:") ||
+        origin.startsWith("https://localhost:");
+
+      const isVercelOrigin = origin.endsWith(".vercel.app");
+      const isAllowed = allowedOrigins.includes(origin) || isLocalhostOrigin || isVercelOrigin;
+
+      if (isAllowed) {
         return callback(null, true);
       }
-      return callback(null, true);
+
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
