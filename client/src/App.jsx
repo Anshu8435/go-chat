@@ -9,7 +9,7 @@ import Login from "./pages/login.jsx";
 import Navbar from "./component/navbar.jsx";
 import Footer from "./component/Footer.jsx";
 import Register from "./pages/register.jsx";
-import ContactPage from "./pages/contactPage.jsx";
+import ContactPage from "./pages/ContactPage.jsx";
 import ChatPage from "./pages/chatPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
