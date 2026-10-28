@@ -200,6 +200,7 @@ const Login = () => {
                   <input
                     type="email"
                     name="email"
+                    autoComplete="email"
                     placeholder="name@example.com"
                     value={loginData.email}
                     onChange={handleChange}
@@ -229,6 +230,7 @@ const Login = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
+                    autoComplete="current-password"
                     placeholder="••••••••••••"
                     value={loginData.password}
                     onChange={handleChange}
@@ -319,6 +321,7 @@ const Login = () => {
                 <input
                   type="email"
                   name="email"
+                  autoComplete="email"
                   value={resetData.email}
                   onChange={handleResetChange}
                   placeholder="name@example.com"
@@ -333,6 +336,7 @@ const Login = () => {
                 <input
                   type="password"
                   name="newPassword"
+                  autoComplete="new-password"
                   value={resetData.newPassword}
                   onChange={handleResetChange}
                   placeholder="Enter new password"
@@ -347,6 +351,7 @@ const Login = () => {
                 <input
                   type="password"
                   name="confirmPassword"
+                  autoComplete="new-password"
                   value={resetData.confirmPassword}
                   onChange={handleResetChange}
                   placeholder="Confirm new password"
