@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:4500";
+const rawSocketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:4500";
+const SOCKET_URL = rawSocketUrl.includes(":4501") ? rawSocketUrl.replace(":4501", ":4500") : rawSocketUrl;
 
 const SocketContext = createContext();
 
