@@ -2,19 +2,20 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
 const getApiBaseUrl = () => {
-  if (typeof window === "undefined") {
-    return "http://localhost:4501";
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
 
-  const host = window.location.hostname;
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
+
   if (host === "localhost" || host === "127.0.0.1") {
     return "http://localhost:4501";
   }
 
-  return window.location.origin;
+  return "https://go-chat-jade.vercel.app";
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || getApiBaseUrl();
+const API_BASE_URL = getApiBaseUrl();
 
 // Configure default axios instance
 export const api = axios.create({
