@@ -2,8 +2,27 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
-const rawSocketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:4500";
-const SOCKET_URL = rawSocketUrl.includes(":4501") ? rawSocketUrl.replace(":4501", ":4500") : rawSocketUrl;
+const getSocketUrl = () => {
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
+  const isLocalhost = host === "localhost" || host === "127.0.0.1";
+
+  const envUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL;
+
+  if (isLocalhost) {
+    if (envUrl && envUrl.includes(":4501")) {
+      return envUrl.replace(":4501", ":4500");
+    }
+    return envUrl || "http://localhost:4500";
+  }
+
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl;
+  }
+
+  return "";
+};
+
+const SOCKET_URL = getSocketUrl();
 
 const SocketContext = createContext();
 
@@ -15,7 +34,7 @@ export const SocketProvider = ({ children }) => {
   const activeTokenRef = useRef(null);
 
   useEffect(() => {
-    if (!user || !token) {
+    if (!user || !token || !SOCKET_URL) {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
