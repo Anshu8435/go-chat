@@ -58,7 +58,7 @@ export const sendMessage = async (req, res, next) => {
       io.to(receiverSocketId).emit("newMessage", newMessage);
       io.to(receiverSocketId).emit("receive_message", newMessage);
     }
-    
+
     // Also emit to receiver room
     io.to(`user:${receiverId}`).emit("newMessage", newMessage);
 

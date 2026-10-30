@@ -4,17 +4,11 @@ export const verifyToken = (req, res, next) => {
   try {
     let token = null;
 
-    // 1. Authorization header takes highest priority
     const authHeader = req.headers.authorization || req.headers.Authorization;
     if (authHeader) {
-      if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
-        token = authHeader.split(" ")[1];
-      } else {
-        token = authHeader;
-      }
+      token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
     }
 
-    // 2. Cookie fallback if no header is present
     if (!token && req.cookies?.token) {
       token = req.cookies.token;
     }
@@ -29,7 +23,6 @@ export const verifyToken = (req, res, next) => {
     try {
       decoded = jwt.verify(token, secret);
     } catch {
-      // If header token was invalid, try cookie as secondary fallback if available
       if (req.cookies?.token && token !== req.cookies.token) {
         try {
           decoded = jwt.verify(req.cookies.token, secret);
@@ -45,7 +38,7 @@ export const verifyToken = (req, res, next) => {
     req.user = { ...decoded, id: userId, _id: userId };
     next();
   } catch (error) {
-    console.error("Token verification error:", error.message || error);
-    return res.status(401).json({ message: "Authentication failed. Please login again." });
+    console.error("Auth middleware error:", error);
+    return res.status(401).json({ message: "Authentication failed." });
   }
 };

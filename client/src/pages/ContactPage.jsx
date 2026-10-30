@@ -65,9 +65,12 @@ const ContactPage = () => {
               Contact us
             </div>
 
-            <h1 className="text-4xl font-bold text-white">Let’s build your next chat experience.</h1>
+            <h1 className="text-4xl font-bold text-white">
+              Let’s build your next chat experience.
+            </h1>
             <p className="mt-4 text-slate-300">
-              Need help with an enterprise chat system, custom messaging feature, or migration? Tell us what you need and our team will get back to you.
+              Need help with an enterprise chat system, custom messaging feature, or migration? Tell
+              us what you need and our team will get back to you.
             </p>
 
             <div className="mt-8 space-y-4 text-sm text-slate-200">

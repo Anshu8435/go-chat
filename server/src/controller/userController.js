@@ -44,7 +44,7 @@ export const updateUserProfile = async (req, res, next) => {
     user.fullName = String(fullName).trim();
     user.email = normalizedEmail;
     user.phone = phone ? String(phone).trim() : "";
-    user.bio = bio !== undefined ? String(bio).trim().slice(0, 200) : (user.bio || "");
+    user.bio = bio !== undefined ? String(bio).trim().slice(0, 200) : user.bio || "";
 
     if (profilePic !== undefined) {
       user.profilePic = String(profilePic);

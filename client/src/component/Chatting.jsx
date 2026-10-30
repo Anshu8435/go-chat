@@ -179,7 +179,11 @@ const Chatting = ({ selectedFriend, currentUser }) => {
           <div className="relative flex-shrink-0">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF007A] via-[#9B5DE5] to-[#00F0FF] text-base font-bold text-white shadow-lg shadow-[#ff007a]/20 sm:h-12 sm:w-12 overflow-hidden">
               {selectedFriend.profilePic ? (
-                <img src={selectedFriend.profilePic} alt={selectedFriend.fullName || "User"} className="h-full w-full object-cover" />
+                <img
+                  src={selectedFriend.profilePic}
+                  alt={selectedFriend.fullName || "User"}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 selectedFriend.fullName?.charAt(0)?.toUpperCase() || "U"
               )}
@@ -192,7 +196,9 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               {selectedFriend.fullName || "User"}
             </h2>
             <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-medium text-slate-400 sm:text-xs">
-              <span className={`h-2 w-2 rounded-full ${isSelectedOnline ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
+              <span
+                className={`h-2 w-2 rounded-full ${isSelectedOnline ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`}
+              />
               {isSelectedOnline ? "Active now" : "Offline"}
             </p>
           </div>
@@ -219,7 +225,11 @@ const Chatting = ({ selectedFriend, currentUser }) => {
           >
             <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
-          <button onClick={() => toast("Search messages in this thread...")} title="Search Messages" className="icon-button">
+          <button
+            onClick={() => toast("Search messages in this thread...")}
+            title="Search Messages"
+            className="icon-button"
+          >
             <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
@@ -266,7 +276,9 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                     whileHover={{ y: -2, scale: 1.01 }}
                     className={`message-bubble ${isMe ? "me" : "them"}`}
                   >
-                    <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">{chat.message}</p>
+                    <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">
+                      {chat.message}
+                    </p>
 
                     <div className={`message-meta ${isMe ? "me" : "them"}`}>
                       <span>
@@ -303,7 +315,9 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                   <span />
                   <span />
                 </div>
-                <span className="typing-label">{selectedFriend.fullName || "Contact"} is typing...</span>
+                <span className="typing-label">
+                  {selectedFriend.fullName || "Contact"} is typing...
+                </span>
               </motion.div>
             )}
 
@@ -423,7 +437,10 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </motion.button>
           ) : (
-            <button onClick={() => toast("Voice note recording simulated.")} className="icon-button">
+            <button
+              onClick={() => toast("Voice note recording simulated.")}
+              className="icon-button"
+            >
               <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           )}
@@ -444,9 +461,13 @@ const Chatting = ({ selectedFriend, currentUser }) => {
               </div>
 
               <div>
-                <h3 className="text-2xl font-bold text-white">{selectedFriend.fullName || "User"}</h3>
+                <h3 className="text-2xl font-bold text-white">
+                  {selectedFriend.fullName || "User"}
+                </h3>
                 <p className="mt-1 text-xs uppercase tracking-[0.28em] text-cyan-300">
-                  {activeCallType === "video" ? "HD Video Call Connected" : "Encrypted Voice Call Connected"}
+                  {activeCallType === "video"
+                    ? "HD Video Call Connected"
+                    : "Encrypted Voice Call Connected"}
                 </p>
                 <p className="mt-2 font-mono text-sm text-slate-400">{formatTime(callDuration)}</p>
               </div>
@@ -470,7 +491,9 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                 <button
                   onClick={() => setIsMicMuted((prev) => !prev)}
                   className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition ${
-                    isMicMuted ? "border-red-500/40 bg-red-500/20 text-red-400" : "border-white/10 bg-slate-800 text-slate-200"
+                    isMicMuted
+                      ? "border-red-500/40 bg-red-500/20 text-red-400"
+                      : "border-white/10 bg-slate-800 text-slate-200"
                   }`}
                 >
                   {isMicMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
@@ -480,7 +503,9 @@ const Chatting = ({ selectedFriend, currentUser }) => {
                   <button
                     onClick={() => setIsVideoOff((prev) => !prev)}
                     className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition ${
-                      isVideoOff ? "border-red-500/40 bg-red-500/20 text-red-400" : "border-white/10 bg-slate-800 text-slate-200"
+                      isVideoOff
+                        ? "border-red-500/40 bg-red-500/20 text-red-400"
+                        : "border-white/10 bg-slate-800 text-slate-200"
                     }`}
                   >
                     {isVideoOff ? <VideoOff className="h-6 w-6" /> : <Video className="h-6 w-6" />}

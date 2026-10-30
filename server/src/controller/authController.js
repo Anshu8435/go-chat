@@ -1,7 +1,7 @@
-import User from "../models/user.model.js";
-import Otp from "../models/otp.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
+import Otp from "../models/otp.model.js";
 import { sendOtpEmail } from "../utils/mailer.js";
 
 const generateToken = (userId) => {
@@ -44,7 +44,9 @@ export const RegisterUser = async (req, res, next) => {
     const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
-      return res.status(409).json({ message: "Email is already registered. Please login instead." });
+      return res
+        .status(409)
+        .json({ message: "Email is already registered. Please login instead." });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -109,9 +111,6 @@ export const LoginUser = async (req, res, next) => {
   }
 };
 
-/**
- * Send OTP to user email for OTP-based Login
- */
 export const SendLoginOtp = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -129,16 +128,10 @@ export const SendLoginOtp = async (req, res, next) => {
       });
     }
 
-    // Generate random 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Invalidate existing login OTPs for this email
     await Otp.deleteMany({ email: normalizedEmail, type: "login" });
-
-    // Store new OTP
     await Otp.create({ email: normalizedEmail, otp, type: "login" });
-
-    // Send email
     await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
 
     return res.status(200).json({
@@ -146,16 +139,13 @@ export const SendLoginOtp = async (req, res, next) => {
       message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
     });
   } catch (error) {
-    console.error("SendLoginOtp Error:", error);
+    console.error("SendLoginOtp error:", error);
     return res.status(500).json({
-      message: "Failed to send OTP to your email. Please verify your email configuration.",
+      message: "Failed to send OTP to your email. Please check your email configuration.",
     });
   }
 };
 
-/**
- * Verify Login OTP and authenticate user
- */
 export const VerifyLoginOtp = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
@@ -179,7 +169,6 @@ export const VerifyLoginOtp = async (req, res, next) => {
       });
     }
 
-    // Delete used OTP
     await Otp.deleteMany({ email: normalizedEmail, type: "login" });
 
     const user = await User.findOne({ email: normalizedEmail });
@@ -191,7 +180,7 @@ export const VerifyLoginOtp = async (req, res, next) => {
     setTokenCookie(res, token);
 
     return res.status(200).json({
-      message: "Logged in successfully with OTP!",
+      message: "Logged in successfully!",
       token,
       user: formatUserResponse(user),
     });
@@ -200,9 +189,6 @@ export const VerifyLoginOtp = async (req, res, next) => {
   }
 };
 
-/**
- * Send OTP for Password Reset
- */
 export const SendForgotPasswordOtp = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -222,11 +208,8 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Invalidate existing reset OTPs for this email
     await Otp.deleteMany({ email: normalizedEmail, type: "forgot-password" });
-
     await Otp.create({ email: normalizedEmail, otp, type: "forgot-password" });
-
     await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
 
     return res.status(200).json({
@@ -234,16 +217,13 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
       message: `Password reset OTP has been sent to ${normalizedEmail}.`,
     });
   } catch (error) {
-    console.error("SendForgotPasswordOtp Error:", error);
+    console.error("SendForgotPasswordOtp error:", error);
     return res.status(500).json({
-      message: "Failed to send reset code to your email. Please try again.",
+      message: "Failed to send reset code. Please try again later.",
     });
   }
 };
 
-/**
- * Verify OTP and reset password
- */
 export const ResetPasswordWithOtp = async (req, res, next) => {
   try {
     const { email, otp, newPassword } = req.body;
@@ -280,17 +260,15 @@ export const ResetPasswordWithOtp = async (req, res, next) => {
       return res.status(404).json({ message: "Account not found." });
     }
 
-    // Invalidate OTP
     await Otp.deleteMany({ email: normalizedEmail, type: "forgot-password" });
 
-    // Hash and update password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(String(newPassword), salt);
     await user.save();
 
     return res.status(200).json({
       success: true,
-      message: "Password reset successful! You can now log in with your new password.",
+      message: "Password reset successful! You can now log in.",
     });
   } catch (error) {
     next(error);

@@ -19,34 +19,21 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const Login = () => {
   const navigate = useNavigate();
-  const {
-    login,
-    sendLoginOtp,
-    verifyLoginOtp,
-    sendForgotPasswordOtp,
-    resetPasswordWithOtp,
-  } = useAuth();
-
-  // Tab: "password" | "otp"
+  const { login, sendLoginOtp, verifyLoginOtp, sendForgotPasswordOtp, resetPasswordWithOtp } =
+    useAuth();
   const [authMode, setAuthMode] = useState("password");
-
-  // Standard Password Login State
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // OTP Login State
   const [otpEmail, setOtpEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpStep, setOtpStep] = useState("request"); // "request" | "verify"
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
-
-  // Forgot Password Modal State
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [fpStep, setFpStep] = useState(1); // 1: Email, 2: OTP + New Password
   const [fpEmail, setFpEmail] = useState("");
@@ -57,8 +44,6 @@ const Login = () => {
   const [fpIsSending, setFpIsSending] = useState(false);
   const [fpIsResetting, setFpIsResetting] = useState(false);
   const [fpTimer, setFpTimer] = useState(0);
-
-  // Countdown timer for Login OTP
   useEffect(() => {
     let interval = null;
     if (otpTimer > 0) {
@@ -66,8 +51,6 @@ const Login = () => {
     }
     return () => clearInterval(interval);
   }, [otpTimer]);
-
-  // Countdown timer for Forgot Password OTP
   useEffect(() => {
     let interval = null;
     if (fpTimer > 0) {
@@ -80,8 +63,6 @@ const Login = () => {
     const { name, value } = e.target;
     setLoginData((prev) => ({ ...prev, [name]: value }));
   };
-
-  // Submit Password Login
   const handlePasswordLoginSubmit = async (e) => {
     e.preventDefault();
 
@@ -103,8 +84,6 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Send OTP for Login
   const handleSendLoginOtp = async (e) => {
     if (e) e.preventDefault();
 
@@ -127,8 +106,6 @@ const Login = () => {
       setIsSendingOtp(false);
     }
   };
-
-  // Verify OTP for Login
   const handleVerifyLoginOtp = async (e) => {
     e.preventDefault();
 
@@ -148,15 +125,12 @@ const Login = () => {
       toast.success(res.message || "OTP verified! Welcome back!");
       navigate("/chatPage");
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.message || "Invalid or expired OTP. Please try again.";
+      const errorMsg = err.response?.data?.message || "Invalid or expired OTP. Please try again.";
       toast.error(errorMsg);
     } finally {
       setIsVerifyingOtp(false);
     }
   };
-
-  // Forgot Password: Step 1 - Send OTP
   const handleSendFpOtp = async (e) => {
     e.preventDefault();
 
@@ -172,15 +146,12 @@ const Login = () => {
       setFpStep(2);
       setFpTimer(60);
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.message || "Failed to send reset OTP. Check your email.";
+      const errorMsg = err.response?.data?.message || "Failed to send reset OTP. Check your email.";
       toast.error(errorMsg);
     } finally {
       setFpIsSending(false);
     }
   };
-
-  // Forgot Password: Step 2 - Verify OTP & Set New Password
   const handleResetPasswordWithOtp = async (e) => {
     e.preventDefault();
 
@@ -229,12 +200,9 @@ const Login = () => {
       className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden font-sans"
       style={{ background: "var(--bg-page)", color: "var(--text)" }}
     >
-      {/* AMBIENT BACKGROUND GLOW LIGHTS */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none" />
-
-      {/* MESH PATTERN */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
@@ -244,14 +212,12 @@ const Login = () => {
       />
 
       <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center">
-        {/* LEFT BRAND SHOWCASE (Desktop) */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7 }}
           className="hidden lg:flex lg:col-span-6 flex-col justify-between p-8 space-y-8"
         >
-          {/* LOGO */}
           <Link to="/" className="inline-flex items-center gap-3 group">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/25">
               <MessageSquare className="w-6 h-6 text-white" />
@@ -263,8 +229,6 @@ const Login = () => {
               <p className="text-xs text-emerald-400/80 font-medium">Next-Gen Messaging</p>
             </div>
           </Link>
-
-          {/* HERO BANNER CARD */}
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
@@ -283,8 +247,6 @@ const Login = () => {
               conversations, voice calls, and real-time socket updates.
             </p>
           </div>
-
-          {/* FEATURE POINTS */}
           <div className="space-y-3 pt-4 border-t border-white/10">
             <div className="flex items-center gap-3 text-xs text-slate-300">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -296,8 +258,6 @@ const Login = () => {
             </div>
           </div>
         </motion.div>
-
-        {/* RIGHT FORM CARD */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -312,13 +272,18 @@ const Login = () => {
               boxShadow: "0 25px 60px var(--shadow-glow)",
             }}
           >
-            {/* CARD HEADER */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold font-heading" style={{ color: "var(--text-strong)" }}>
+                <h1
+                  className="text-3xl font-bold font-heading"
+                  style={{ color: "var(--text-strong)" }}
+                >
                   Sign In
                 </h1>
-                <Link to="/" className="text-xs text-slate-400 hover:text-emerald-400 transition-colors">
+                <Link
+                  to="/"
+                  className="text-xs text-slate-400 hover:text-emerald-400 transition-colors"
+                >
                   ← Back to Home
                 </Link>
               </div>
@@ -326,8 +291,6 @@ const Login = () => {
                 Choose your preferred login method to continue
               </p>
             </div>
-
-            {/* TAB SELECTOR: PASSWORD VS OTP */}
             <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-900/80 border border-white/10 mb-6">
               <button
                 type="button"
@@ -354,11 +317,8 @@ const Login = () => {
                 Email OTP
               </button>
             </div>
-
-            {/* PASSWORD LOGIN FORM */}
             {authMode === "password" && (
               <form onSubmit={handlePasswordLoginSubmit} className="space-y-5">
-                {/* EMAIL */}
                 <div>
                   <label className="mb-2 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Email Address
@@ -378,8 +338,6 @@ const Login = () => {
                     />
                   </div>
                 </div>
-
-                {/* PASSWORD */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
@@ -419,8 +377,6 @@ const Login = () => {
                     </button>
                   </div>
                 </div>
-
-                {/* SUBMIT BUTTON */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -440,8 +396,6 @@ const Login = () => {
                 </button>
               </form>
             )}
-
-            {/* OTP LOGIN FORM */}
             {authMode === "otp" && (
               <div className="space-y-5">
                 {otpStep === "request" ? (
@@ -554,15 +508,11 @@ const Login = () => {
                 )}
               </div>
             )}
-
-            {/* DIVIDER */}
             <div className="my-6 flex items-center gap-3">
               <div className="h-px flex-1 bg-white/10" />
               <span className="text-xs text-slate-500 uppercase tracking-widest font-mono">OR</span>
               <div className="h-px flex-1 bg-white/10" />
             </div>
-
-            {/* REGISTER LINK */}
             <div className="text-center text-sm text-slate-400">
               Don't have an account?{" "}
               <Link to="/register" className="font-bold text-emerald-400 hover:underline">
@@ -572,8 +522,6 @@ const Login = () => {
           </div>
         </motion.div>
       </div>
-
-      {/* FORGOT PASSWORD MODAL (WITH EMAIL OTP VERIFICATION) */}
       <AnimatePresence>
         {showForgotPassword && (
           <div
@@ -592,7 +540,6 @@ const Login = () => {
                 boxShadow: "0 25px 60px var(--shadow-glow)",
               }}
             >
-              {/* MODAL HEADER */}
               <div className="mb-6 flex items-start justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-white font-heading">
@@ -612,8 +559,6 @@ const Login = () => {
                   ✕
                 </button>
               </div>
-
-              {/* STEP 1: ENTER EMAIL TO SEND OTP */}
               {fpStep === 1 ? (
                 <form onSubmit={handleSendFpOtp} className="space-y-4">
                   <div>
@@ -664,8 +609,6 @@ const Login = () => {
                       Change
                     </button>
                   </div>
-
-                  {/* OTP INPUT */}
                   <div>
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                       6-Digit OTP Code
@@ -681,8 +624,6 @@ const Login = () => {
                       className="w-full rounded-2xl border border-white/10 bg-slate-800/80 px-4 py-2.5 text-center text-lg font-mono tracking-[0.25em] text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                     />
                   </div>
-
-                  {/* NEW PASSWORD */}
                   <div>
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                       New Password
@@ -701,12 +642,14 @@ const Login = () => {
                         onClick={() => setFpShowPassword(!fpShowPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                       >
-                        {fpShowPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {fpShowPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
-
-                  {/* CONFIRM PASSWORD */}
                   <div>
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                       Confirm New Password
@@ -720,8 +663,6 @@ const Login = () => {
                       className="w-full rounded-2xl border border-white/10 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                     />
                   </div>
-
-                  {/* RESEND TIMER */}
                   <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
                     <span>Didn't get code?</span>
                     <button

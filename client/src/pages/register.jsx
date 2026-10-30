@@ -2,7 +2,18 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { Eye, EyeOff, Loader2, User, Mail, Lock, MessageSquare, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  User,
+  Mail,
+  Lock,
+  MessageSquare,
+  ShieldCheck,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 const Register = () => {
@@ -72,31 +83,24 @@ const Register = () => {
       className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden font-sans"
       style={{ background: "var(--bg-page)", color: "var(--text)" }}
     >
-      
-      {/* AMBIENT BACKGROUND GLOW LIGHTS */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-teal-500/15 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none" />
-
-      {/* MESH PATTERN */}
-      <div 
-        className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
           backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-          backgroundSize: '36px 36px'
+          backgroundSize: "36px 36px",
         }}
       />
 
       <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center">
-        
-        {/* LEFT BRAND SHOWCASE (Desktop) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7 }}
           className="hidden lg:flex lg:col-span-6 flex-col justify-between p-8 space-y-8"
         >
-          {/* LOGO */}
           <Link to="/" className="inline-flex items-center gap-3 group">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/25">
               <MessageSquare className="w-6 h-6 text-white" />
@@ -108,8 +112,6 @@ const Register = () => {
               <p className="text-xs text-emerald-400/80 font-medium">Next-Gen Messaging</p>
             </div>
           </Link>
-
-          {/* HERO BANNER CARD */}
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
@@ -124,11 +126,10 @@ const Register = () => {
             </h2>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-md">
-              Get instant access to real-time messaging, HD voice/video calls, and absolute data control.
+              Get instant access to real-time messaging, HD voice/video calls, and absolute data
+              control.
             </p>
           </div>
-
-          {/* FEATURE POINTS */}
           <div className="space-y-3 pt-4 border-t border-white/10">
             <div className="flex items-center gap-3 text-xs text-slate-300">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -140,8 +141,6 @@ const Register = () => {
             </div>
           </div>
         </motion.div>
-
-        {/* RIGHT FORM CARD */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,22 +155,21 @@ const Register = () => {
               boxShadow: "0 25px 60px var(--shadow-glow)",
             }}
           >
-            
-            {/* CARD HEADER */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-3xl font-bold text-white font-heading">Create Account</h1>
-                <Link to="/" className="text-xs text-slate-400 hover:text-emerald-400 transition-colors">
+                <Link
+                  to="/"
+                  className="text-xs text-slate-400 hover:text-emerald-400 transition-colors"
+                >
                   ← Back to Home
                 </Link>
               </div>
-              <p className="text-sm text-slate-400">Register to start private messaging on GoChat</p>
+              <p className="text-sm text-slate-400">
+                Register to start private messaging on GoChat
+              </p>
             </div>
-
-            {/* FORM */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              
-              {/* FULL NAME */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Full Name
@@ -191,8 +189,6 @@ const Register = () => {
                   />
                 </div>
               </div>
-
-              {/* EMAIL */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Email Address
@@ -212,14 +208,18 @@ const Register = () => {
                   />
                 </div>
               </div>
-
-              {/* PHONE */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Phone Number
                 </label>
                 <div className="relative">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  >
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.4 12.4 0 0 0 .7 7.08 2 2 0 0 1 1 9.17l-1.1 3.5a2 2 0 0 0 1.66 2.45l1.77.44a16.4 16.4 0 0 0 9.3 9.3l.44 1.77a2 2 0 0 0 2.45 1.66l3.5-1.1a2 2 0 0 1 2.1 1.36 12.4 12.4 0 0 0 3.28-1.17A2 2 0 0 1 22 16.92Z" />
                   </svg>
                   <input
@@ -235,8 +235,6 @@ const Register = () => {
                   />
                 </div>
               </div>
-
-              {/* PASSWORD */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Password
@@ -262,8 +260,6 @@ const Register = () => {
                   </button>
                 </div>
               </div>
-
-              {/* CONFIRM PASSWORD */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Confirm Password
@@ -285,12 +281,14 @@ const Register = () => {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
-
-              {/* SUBMIT BUTTON */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -308,27 +306,20 @@ const Register = () => {
                   </>
                 )}
               </button>
-
             </form>
-
-            {/* DIVIDER */}
             <div className="my-5 flex items-center gap-3">
               <div className="h-px flex-1 bg-white/10" />
               <span className="text-xs text-slate-500 uppercase tracking-widest font-mono">OR</span>
               <div className="h-px flex-1 bg-white/10" />
             </div>
-
-            {/* LOGIN LINK */}
             <div className="text-center text-sm text-slate-400">
               Already have an account?{" "}
               <Link to="/login" className="font-bold text-emerald-400 hover:underline">
                 Sign In
               </Link>
             </div>
-
           </div>
         </motion.div>
-
       </div>
     </div>
   );

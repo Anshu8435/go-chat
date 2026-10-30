@@ -44,10 +44,8 @@ const DashboardPage = () => {
   const [savingPassword, setSavingPassword] = useState(false);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
-  // Sync form when user object updates (after login or profile save)
   useEffect(() => {
     if (user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProfileData({
         fullName: user.fullName || "",
         email: user.email || "",
@@ -56,8 +54,7 @@ const DashboardPage = () => {
         profilePic: user.profilePic || "",
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.email, user?.fullName, user?.phone, user?.bio, user?.profilePic]);
+  }, [user]);
 
   const initials = useMemo(() => {
     if (!profileData.fullName) return "U";
@@ -160,7 +157,11 @@ const DashboardPage = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
 
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
       toast.error("Please fill in all password fields.");
       return;
     }
@@ -200,10 +201,11 @@ const DashboardPage = () => {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center theme-shell" style={{ color: "var(--text)" }}>
-        <div className="rounded-2xl px-6 py-4 theme-soft">
-          Loading your dashboard...
-        </div>
+      <div
+        className="flex min-h-screen items-center justify-center theme-shell"
+        style={{ color: "var(--text)" }}
+      >
+        <div className="rounded-2xl px-6 py-4 theme-soft">Loading your dashboard...</div>
       </div>
     );
   }
@@ -211,7 +213,6 @@ const DashboardPage = () => {
   return (
     <div className="min-h-screen theme-shell" style={{ color: "var(--text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* HEADER BAR */}
         <header
           className="mb-8 flex flex-col gap-4 rounded-3xl p-5 shadow-2xl md:flex-row md:items-center md:justify-between"
           style={{
@@ -257,7 +258,6 @@ const DashboardPage = () => {
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="space-y-6">
-            {/* PROFILE & PHOTO EDIT SECTION */}
             <section className="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl shadow-slate-950/20">
               <div className="mb-6 flex items-center gap-3">
                 <div className="rounded-2xl bg-emerald-500/10 p-2 text-emerald-300">
@@ -268,8 +268,6 @@ const DashboardPage = () => {
                   <h2 className="text-xl font-semibold text-white">Profile & Photo</h2>
                 </div>
               </div>
-
-              {/* PHOTO UPLOAD & PREVIEW WIDGET */}
               <div className="mb-8 rounded-2xl border border-white/10 bg-slate-900/60 p-5 flex flex-col sm:flex-row items-center gap-6">
                 <div className="relative group shrink-0">
                   <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-emerald-500/40 shadow-xl bg-gradient-to-tr from-slate-800 to-slate-700 flex items-center justify-center text-2xl font-bold text-white">
@@ -296,7 +294,8 @@ const DashboardPage = () => {
                 <div className="flex-1 text-center sm:text-left space-y-2">
                   <h3 className="text-sm font-semibold text-white">Your Profile Avatar</h3>
                   <p className="text-xs text-slate-400">
-                    Upload a custom photo (JPEG, PNG, WebP). Your picture will be visible to your contacts in chat.
+                    Upload a custom photo (JPEG, PNG, WebP). Your picture will be visible to your
+                    contacts in chat.
                   </p>
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
@@ -330,8 +329,6 @@ const DashboardPage = () => {
                   </div>
                 </div>
               </div>
-
-              {/* PROFILE FORM */}
               <form onSubmit={handleProfileSubmit} className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="space-y-2">
@@ -341,7 +338,9 @@ const DashboardPage = () => {
                       <input
                         type="text"
                         value={profileData.fullName}
-                        onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
+                        onChange={(e) =>
+                          setProfileData({ ...profileData, fullName: e.target.value })
+                        }
                         className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
                         placeholder="John Doe"
                       />
@@ -376,8 +375,6 @@ const DashboardPage = () => {
                     />
                   </div>
                 </label>
-
-                {/* BIO / STATUS */}
                 <label className="block space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-300">Bio / Status</span>
@@ -401,7 +398,9 @@ const DashboardPage = () => {
                 </label>
 
                 <div className="flex items-center justify-between gap-3 pt-2">
-                  <p className="text-sm text-slate-400">Save your profile details and photo to your account.</p>
+                  <p className="text-sm text-slate-400">
+                    Save your profile details and photo to your account.
+                  </p>
                   <button
                     type="submit"
                     disabled={savingProfile || isProcessingPhoto}
@@ -413,8 +412,6 @@ const DashboardPage = () => {
                 </div>
               </form>
             </section>
-
-            {/* PASSWORD UPDATE SECTION */}
             <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-slate-950/20">
               <div className="mb-5 flex items-center gap-3">
                 <div className="rounded-2xl bg-sky-500/10 p-2 text-sky-300">
@@ -434,7 +431,9 @@ const DashboardPage = () => {
                     <input
                       type={showCurrentPassword ? "text" : "password"}
                       value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      onChange={(e) =>
+                        setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                      }
                       className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
                       placeholder="Enter current password"
                     />
@@ -443,7 +442,11 @@ const DashboardPage = () => {
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                       className="text-slate-400 transition hover:text-white"
                     >
-                      {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showCurrentPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </label>
@@ -456,7 +459,9 @@ const DashboardPage = () => {
                       <input
                         type={showNewPassword ? "text" : "password"}
                         value={passwordData.newPassword}
-                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        onChange={(e) =>
+                          setPasswordData({ ...passwordData, newPassword: e.target.value })
+                        }
                         className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
                         placeholder="Minimum 6 characters"
                       />
@@ -465,7 +470,11 @@ const DashboardPage = () => {
                         onClick={() => setShowNewPassword(!showNewPassword)}
                         className="text-slate-400 transition hover:text-white"
                       >
-                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showNewPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </label>
@@ -477,7 +486,9 @@ const DashboardPage = () => {
                       <input
                         type="password"
                         value={passwordData.confirmPassword}
-                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                        onChange={(e) =>
+                          setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                        }
                         className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
                         placeholder="Confirm new password"
                       />
@@ -486,7 +497,9 @@ const DashboardPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between gap-3 pt-2">
-                  <p className="text-sm text-slate-400">Use a strong password for better protection.</p>
+                  <p className="text-sm text-slate-400">
+                    Use a strong password for better protection.
+                  </p>
                   <button
                     type="submit"
                     disabled={savingPassword}
@@ -520,7 +533,9 @@ const DashboardPage = () => {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Name</p>
-                    <p className="mt-0.5 text-base font-semibold text-white truncate">{user.fullName}</p>
+                    <p className="mt-0.5 text-base font-semibold text-white truncate">
+                      {user.fullName}
+                    </p>
                   </div>
                 </div>
 
@@ -557,7 +572,9 @@ const DashboardPage = () => {
                   className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900/70 p-3 text-slate-200 transition hover:bg-slate-800"
                 >
                   <span>Messages</span>
-                  <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-xs text-emerald-300">Open</span>
+                  <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-xs text-emerald-300">
+                    Open
+                  </span>
                 </Link>
 
                 <Link
@@ -565,7 +582,9 @@ const DashboardPage = () => {
                   className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900/70 p-3 text-slate-200 transition hover:bg-slate-800"
                 >
                   <span>Theme settings</span>
-                  <span className="rounded-full bg-cyan-500/15 px-2 py-1 text-xs text-cyan-300">Edit</span>
+                  <span className="rounded-full bg-cyan-500/15 px-2 py-1 text-xs text-cyan-300">
+                    Edit
+                  </span>
                 </Link>
               </div>
             </section>

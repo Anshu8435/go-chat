@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
@@ -9,16 +8,10 @@ const getSocketUrl = () => {
   const envUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL;
 
   if (isLocalhost) {
-    if (envUrl && envUrl.includes(":4501")) {
-      return envUrl.replace(":4501", ":4500");
-    }
+    if (envUrl && envUrl.includes(":4501")) return envUrl.replace(":4501", ":4500");
     return envUrl || "http://localhost:4500";
   }
-
-  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
-    return envUrl;
-  }
-
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) return envUrl;
   return "";
 };
 
@@ -39,7 +32,6 @@ export const SocketProvider = ({ children }) => {
         socketRef.current = null;
       }
       activeTokenRef.current = null;
-      // schedule state reset outside synchronous effect body
       const t = setTimeout(() => setSocket(null), 0);
       return () => clearTimeout(t);
     }
@@ -82,16 +74,12 @@ export const SocketProvider = ({ children }) => {
   }, [user, token]);
 
   return (
-    <SocketContext.Provider value={{ socket, onlineUsers }}>
-      {children}
-    </SocketContext.Provider>
+    <SocketContext.Provider value={{ socket, onlineUsers }}>{children}</SocketContext.Provider>
   );
 };
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
-  if (!context) {
-    throw new Error("useSocket must be used within a SocketProvider");
-  }
+  if (!context) throw new Error("useSocket must be used within a SocketProvider");
   return context;
 };

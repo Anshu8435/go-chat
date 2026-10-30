@@ -36,7 +36,10 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden theme-shell" style={{ color: "var(--text)" }}>
+    <div
+      className="relative min-h-screen overflow-hidden theme-shell"
+      style={{ color: "var(--text)" }}
+    >
       <div className="pointer-events-none absolute inset-0 opacity-70" style={ambientGlow} />
 
       <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -78,7 +81,9 @@ const SettingsPage = () => {
             <div className="space-y-6">
               <div>
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Accent Palette</h2>
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                    Accent Palette
+                  </h2>
                   <span className="text-xs text-slate-500">{selectedPreset.name}</span>
                 </div>
 
@@ -91,10 +96,17 @@ const SettingsPage = () => {
                         type="button"
                         onClick={() => setSelectedPreset(preset)}
                         className={`group relative overflow-hidden rounded-2xl border p-3 text-left transition ${
-                          isActive ? "border-white/30 bg-white/10" : "border-white/10 bg-slate-900/50 hover:border-white/20"
+                          isActive
+                            ? "border-white/30 bg-white/10"
+                            : "border-white/10 bg-slate-900/50 hover:border-white/20"
                         }`}
                       >
-                        <div className="mb-3 h-14 rounded-xl" style={{ backgroundImage: `linear-gradient(135deg, ${preset.start}, ${preset.end})` }} />
+                        <div
+                          className="mb-3 h-14 rounded-xl"
+                          style={{
+                            backgroundImage: `linear-gradient(135deg, ${preset.start}, ${preset.end})`,
+                          }}
+                        />
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm font-semibold text-white">{preset.name}</span>
                           {isActive && <Check className="h-4 w-4 text-cyan-300" />}
@@ -107,12 +119,16 @@ const SettingsPage = () => {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="text-xs uppercase tracking-[0.2em] text-slate-400">Primary Accent</span>
+                  <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Primary Accent
+                  </span>
                   <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/60 p-3">
                     <input
                       type="color"
                       value={selectedPreset.start}
-                      onChange={(e) => setSelectedPreset((prev) => ({ ...prev, start: e.target.value }))}
+                      onChange={(e) =>
+                        setSelectedPreset((prev) => ({ ...prev, start: e.target.value }))
+                      }
                       className="h-10 w-14 cursor-pointer rounded-lg border-0 bg-transparent p-0"
                     />
                     <span className="font-mono text-sm text-slate-200">{selectedPreset.start}</span>
@@ -120,12 +136,16 @@ const SettingsPage = () => {
                 </label>
 
                 <label className="space-y-2">
-                  <span className="text-xs uppercase tracking-[0.2em] text-slate-400">Secondary Accent</span>
+                  <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Secondary Accent
+                  </span>
                   <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/60 p-3">
                     <input
                       type="color"
                       value={selectedPreset.end}
-                      onChange={(e) => setSelectedPreset((prev) => ({ ...prev, end: e.target.value }))}
+                      onChange={(e) =>
+                        setSelectedPreset((prev) => ({ ...prev, end: e.target.value }))
+                      }
                       className="h-10 w-14 cursor-pointer rounded-lg border-0 bg-transparent p-0"
                     />
                     <span className="font-mono text-sm text-slate-200">{selectedPreset.end}</span>
@@ -196,7 +216,10 @@ const SettingsPage = () => {
             <div className="mb-5 rounded-[28px] border border-white/10 bg-[#0f141d] p-3 shadow-2xl shadow-black/30">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-bold text-white" style={themeStyle}>
+                  <div
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-bold text-white"
+                    style={themeStyle}
+                  >
                     N
                   </div>
                   <div>
@@ -213,7 +236,10 @@ const SettingsPage = () => {
                   The new palette is insanely clean.
                 </div>
 
-                <div className="max-w-[75%] rounded-[22px] rounded-tl-md p-3 text-sm text-white" style={themeStyle}>
+                <div
+                  className="max-w-[75%] rounded-[22px] rounded-tl-md p-3 text-sm text-white"
+                  style={themeStyle}
+                >
                   I love the glow and the motion curves — ready to ship.
                 </div>
               </div>

@@ -1,8 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-// ── Storage helpers (checks localStorage first, falls back to sessionStorage) ──
 const getStoredItem = (key) => {
   if (typeof window === "undefined") return null;
   try {
@@ -17,7 +15,9 @@ const setStoredItem = (key, value) => {
   try {
     localStorage.setItem(key, value);
     sessionStorage.setItem(key, value);
-  } catch { /* ignore */ }
+  } catch {
+    // Ignore storage quota errors
+  }
 };
 
 const removeStoredItem = (key) => {
@@ -25,10 +25,11 @@ const removeStoredItem = (key) => {
   try {
     localStorage.removeItem(key);
     sessionStorage.removeItem(key);
-  } catch { /* ignore */ }
+  } catch {
+    // Ignore storage quota errors
+  }
 };
 
-// ── API base URL ──────────────────────────────────────────────────────────────
 const getApiBaseUrl = () => {
   const host = typeof window !== "undefined" ? window.location.hostname : "";
   const isLocalhost = host === "localhost" || host === "127.0.0.1";
@@ -44,21 +45,18 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-// ── Axios instance ────────────────────────────────────────────────────────────
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
 
-// Attach Authorization header from storage
 api.interceptors.request.use((config) => {
   const token = getStoredItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Response interceptor: on 401 unauthorized, clear state and redirect to login
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -81,7 +79,6 @@ api.interceptors.response.use(
   }
 );
 
-// ── Context ───────────────────────────────────────────────────────────────────
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -93,7 +90,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const logout = useCallback(async () => {
-    try { await api.post("/auth/logout"); } catch { /* ignore */ }
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // Ignore network errors on logout
+    }
     setToken(null);
     setUser(null);
     removeStoredItem("token");

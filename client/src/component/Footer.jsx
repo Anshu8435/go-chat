@@ -19,35 +19,77 @@ const Footer = () => {
                 <MessageSquare className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-xl font-bold" style={{ color: "var(--text-strong)" }}>GoChat</p>
-                <p className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--accent-a)" }}>Luxury Messaging</p>
+                <p className="text-xl font-bold" style={{ color: "var(--text-strong)" }}>
+                  GoChat
+                </p>
+                <p
+                  className="text-[10px] uppercase tracking-[0.25em]"
+                  style={{ color: "var(--accent-a)" }}
+                >
+                  Luxury Messaging
+                </p>
               </div>
             </div>
             <p className="max-w-sm text-sm leading-relaxed" style={{ color: "var(--text-soft)" }}>
-              Enterprise-level messaging for teams and individuals who want secure, fast, and premium communication.
+              Enterprise-level messaging for teams and individuals who want secure, fast, and
+              premium communication.
             </p>
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.25em]" style={{ color: "var(--text-soft)" }}>Company</h3>
+            <h3
+              className="mb-4 text-sm font-semibold uppercase tracking-[0.25em]"
+              style={{ color: "var(--text-soft)" }}
+            >
+              Company
+            </h3>
             <ul className="space-y-3 text-sm" style={{ color: "var(--text-soft)" }}>
-              <li><Link to="/" className="transition" style={{ color: "var(--text-soft)" }}>Home</Link></li>
-              <li><Link to="/register" className="transition" style={{ color: "var(--text-soft)" }}>Register</Link></li>
-              <li><Link to="/contact" className="transition" style={{ color: "var(--text-soft)" }}>Contact Us</Link></li>
+              <li>
+                <Link to="/" className="transition" style={{ color: "var(--text-soft)" }}>
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/register" className="transition" style={{ color: "var(--text-soft)" }}>
+                  Register
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="transition" style={{ color: "var(--text-soft)" }}>
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.25em]" style={{ color: "var(--text-soft)" }}>Security</h3>
+            <h3
+              className="mb-4 text-sm font-semibold uppercase tracking-[0.25em]"
+              style={{ color: "var(--text-soft)" }}
+            >
+              Security
+            </h3>
             <ul className="space-y-3 text-sm" style={{ color: "var(--text-soft)" }}>
-              <li className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" style={{ color: "var(--accent-a)" }} /> End-to-end protection</li>
-              <li className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4" style={{ color: "var(--accent-b)" }} /> Real-time sync</li>
-              <li className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4" style={{ color: "var(--accent-c)" }} /> Secure file transfer</li>
+              <li className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" style={{ color: "var(--accent-a)" }} /> End-to-end
+                protection
+              </li>
+              <li className="flex items-center gap-2">
+                <ArrowUpRight className="h-4 w-4" style={{ color: "var(--accent-b)" }} /> Real-time
+                sync
+              </li>
+              <li className="flex items-center gap-2">
+                <ArrowUpRight className="h-4 w-4" style={{ color: "var(--accent-c)" }} /> Secure
+                file transfer
+              </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-8 border-t pt-5 text-center text-sm" style={{ borderColor: "var(--line)", color: "var(--text-soft)" }}>
+        <div
+          className="mt-8 border-t pt-5 text-center text-sm"
+          style={{ borderColor: "var(--line)", color: "var(--text-soft)" }}
+        >
           © 2026 GoChat. Built for modern conversations.
         </div>
       </div>

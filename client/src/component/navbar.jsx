@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, MessageSquare, Shield, Sparkles, Globe, LogOut, User as UserIcon, Palette, Menu, X } from "lucide-react";
+import {
+  ChevronDown,
+  MessageSquare,
+  Shield,
+  Sparkles,
+  Globe,
+  LogOut,
+  User as UserIcon,
+  Palette,
+  Menu,
+  X,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -23,11 +34,9 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Apply saved theme to <html> once on mount
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", selectedTheme);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedTheme]);
 
   const handleThemeChange = (e) => {
     const theme = e.target.value;
@@ -54,8 +63,6 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          
-          {/* BRAND LOGO */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
             <div className="relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
               <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -70,8 +77,6 @@ const Navbar = () => {
               </span>
             </div>
           </Link>
-
-          {/* DESKTOP NAVIGATION */}
           <nav
             className="hidden md:flex items-center gap-1 p-1.5 rounded-full border backdrop-blur-md"
             style={{
@@ -79,18 +84,17 @@ const Navbar = () => {
               borderColor: "var(--line)",
             }}
           >
-            
-            {/* Features Dropdown */}
             <div className="relative group px-1">
               <button
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all"
                 style={{ color: "var(--text-soft)" }}
               >
                 <span>Features</span>
-                <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" style={{ color: "var(--text-soft)" }} />
+                <ChevronDown
+                  className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300"
+                  style={{ color: "var(--text-soft)" }}
+                />
               </button>
-
-              {/* Glass Dropdown Menu */}
               <div
                 className="absolute left-0 mt-3 w-64 p-2 rounded-2xl backdrop-blur-2xl border shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-50"
                 style={{
@@ -106,8 +110,12 @@ const Navbar = () => {
                 >
                   <Shield className="w-4 h-4" style={{ color: "var(--accent-a)" }} />
                   <div>
-                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>End-to-End Privacy</p>
-                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>Zero data retention policy</p>
+                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>
+                      End-to-End Privacy
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>
+                      Zero data retention policy
+                    </p>
                   </div>
                 </a>
                 <a
@@ -117,19 +125,27 @@ const Navbar = () => {
                 >
                   <Globe className="w-4 h-4" style={{ color: "var(--accent-b)" }} />
                   <div>
-                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>HD Voice & Video</p>
-                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>Low latency worldwide</p>
+                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>
+                      HD Voice & Video
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>
+                      Low latency worldwide
+                    </p>
                   </div>
                 </a>
                 <a
-                  href="#ai"
+                  href="#sync"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
                   style={{ color: "var(--text-soft)" }}
                 >
                   <Sparkles className="w-4 h-4" style={{ color: "var(--accent-c)" }} />
                   <div>
-                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>AI Assistant</p>
-                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>Smart chat automation</p>
+                    <p className="font-semibold" style={{ color: "var(--text-strong)" }}>
+                      Realtime Sync
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-soft)" }}>
+                      Instant socket connection
+                    </p>
                   </div>
                 </a>
               </div>
@@ -163,8 +179,6 @@ const Navbar = () => {
             >
               Apps
             </a>
-
-            {/* Theme Selector */}
             <div
               className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs"
               style={{
@@ -181,14 +195,30 @@ const Navbar = () => {
                 style={{ color: "var(--text)" }}
                 aria-label="Theme selector"
               >
-                <option value="dark" className="bg-slate-900 text-slate-200">Dark Obsidian</option>
-                <option value="light" className="bg-slate-900 text-slate-200">Clean Light</option>
-                <option value="emerald" className="bg-slate-900 text-slate-200">Emerald Cyber</option>
-                <option value="luxury" className="bg-slate-900 text-slate-200">Gold Luxury</option>
-                <option value="violet" className="bg-slate-900 text-slate-200">Violet Pulse</option>
-                <option value="sunset" className="bg-slate-900 text-slate-200">Sunset Glow</option>
-                <option value="forest" className="bg-slate-900 text-slate-200">Forest Mist</option>
-                <option value="ocean" className="bg-slate-900 text-slate-200">Ocean Drift</option>
+                <option value="dark" className="bg-slate-900 text-slate-200">
+                  Dark Obsidian
+                </option>
+                <option value="light" className="bg-slate-900 text-slate-200">
+                  Clean Light
+                </option>
+                <option value="emerald" className="bg-slate-900 text-slate-200">
+                  Emerald Cyber
+                </option>
+                <option value="luxury" className="bg-slate-900 text-slate-200">
+                  Gold Luxury
+                </option>
+                <option value="violet" className="bg-slate-900 text-slate-200">
+                  Violet Pulse
+                </option>
+                <option value="sunset" className="bg-slate-900 text-slate-200">
+                  Sunset Glow
+                </option>
+                <option value="forest" className="bg-slate-900 text-slate-200">
+                  Forest Mist
+                </option>
+                <option value="ocean" className="bg-slate-900 text-slate-200">
+                  Ocean Drift
+                </option>
               </select>
               <span
                 className="rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]"
@@ -201,8 +231,6 @@ const Navbar = () => {
               </span>
             </div>
           </nav>
-
-          {/* USER ACTIONS */}
           <div className="hidden sm:flex items-center gap-4">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
@@ -241,7 +269,11 @@ const Navbar = () => {
                     }}
                   >
                     {user?.profilePic ? (
-                      <img src={user.profilePic} alt={user.fullName || "User"} className="w-full h-full object-cover" />
+                      <img
+                        src={user.profilePic}
+                        alt={user.fullName || "User"}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="w-4 h-4" />
                     )}
@@ -273,15 +305,11 @@ const Navbar = () => {
                     boxShadow: "0 15px 30px var(--shadow-glow)",
                   }}
                 >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Get Started Free
-                  </span>
+                  <span className="relative z-10 flex items-center gap-2">Get Started Free</span>
                 </Link>
               </div>
             )}
           </div>
-
-          {/* MOBILE MENU TOGGLE */}
           <div className="flex sm:hidden items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -296,8 +324,6 @@ const Navbar = () => {
             </button>
           </div>
         </div>
-
-        {/* MOBILE MENU DROPDOWN */}
         {mobileMenuOpen && (
           <div
             className="sm:hidden p-4 mb-4 rounded-2xl border space-y-3"
@@ -306,10 +332,31 @@ const Navbar = () => {
               borderColor: "var(--line)",
             }}
           >
-            <a href="#privacy" className="block px-4 py-2 text-sm font-medium" style={{ color: "var(--text-soft)" }}>Privacy</a>
-            <a href="#security" className="block px-4 py-2 text-sm font-medium" style={{ color: "var(--text-soft)" }}>Security</a>
-            <a href="#apps" className="block px-4 py-2 text-sm font-medium" style={{ color: "var(--text-soft)" }}>Apps</a>
-            <div className="pt-3 border-t flex flex-col gap-2" style={{ borderColor: "var(--line)" }}>
+            <a
+              href="#privacy"
+              className="block px-4 py-2 text-sm font-medium"
+              style={{ color: "var(--text-soft)" }}
+            >
+              Privacy
+            </a>
+            <a
+              href="#security"
+              className="block px-4 py-2 text-sm font-medium"
+              style={{ color: "var(--text-soft)" }}
+            >
+              Security
+            </a>
+            <a
+              href="#apps"
+              className="block px-4 py-2 text-sm font-medium"
+              style={{ color: "var(--text-soft)" }}
+            >
+              Apps
+            </a>
+            <div
+              className="pt-3 border-t flex flex-col gap-2"
+              style={{ borderColor: "var(--line)" }}
+            >
               {isAuthenticated ? (
                 <>
                   <Link
@@ -359,7 +406,6 @@ const Navbar = () => {
             </div>
           </div>
         )}
-
       </div>
     </header>
   );

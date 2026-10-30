@@ -55,13 +55,14 @@ const ChatPage = () => {
   });
 
   return (
-    <div className="nexus-chat-shell" style={{ background: "var(--bg-page)", color: "var(--text)" }}>
+    <div
+      className="nexus-chat-shell"
+      style={{ background: "var(--bg-page)", color: "var(--text)" }}
+    >
       <div className="nexus-orb orb-one" />
       <div className="nexus-orb orb-two" />
 
-      <div
-        className={`nexus-sidebar ${selectedFriend ? "hidden md:flex" : "flex"}`}
-      >
+      <div className={`nexus-sidebar ${selectedFriend ? "hidden md:flex" : "flex"}`}>
         <div className="nexus-sidebar-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -78,10 +79,17 @@ const ChatPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <Link to="/dashboard" className="profile-chip transition hover:border-cyan-400/40 hover:bg-cyan-400/10">
+              <Link
+                to="/dashboard"
+                className="profile-chip transition hover:border-cyan-400/40 hover:bg-cyan-400/10"
+              >
                 <div className="profile-avatar overflow-hidden">
                   {user?.profilePic ? (
-                    <img src={user.profilePic} alt={user.fullName || "User"} className="h-full w-full object-cover" />
+                    <img
+                      src={user.profilePic}
+                      alt={user.fullName || "User"}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="h-3.5 w-3.5" />
                   )}
@@ -89,7 +97,12 @@ const ChatPage = () => {
                 <span className="truncate">{user?.fullName?.split(" ")[0] || "User"}</span>
               </Link>
 
-              <button onClick={handleLogout} title="Logout" className="icon-button danger" aria-label="Logout">
+              <button
+                onClick={handleLogout}
+                title="Logout"
+                className="icon-button danger"
+                aria-label="Logout"
+              >
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
@@ -143,7 +156,11 @@ const ChatPage = () => {
                   <div className="relative flex-shrink-0">
                     <div className="contact-avatar gradient-sunset overflow-hidden">
                       {u.profilePic ? (
-                        <img src={u.profilePic} alt={u.fullName || "User"} className="h-full w-full object-cover" />
+                        <img
+                          src={u.profilePic}
+                          alt={u.fullName || "User"}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         u.fullName?.charAt(0).toUpperCase() || "U"
                       )}
@@ -153,7 +170,9 @@ const ChatPage = () => {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <h2 className="truncate text-sm font-semibold text-white">{u.fullName || "User"}</h2>
+                      <h2 className="truncate text-sm font-semibold text-white">
+                        {u.fullName || "User"}
+                      </h2>
                       <span className={`status-chip ${isOnline ? "is-online" : ""}`}>
                         {isOnline ? "Online" : "Offline"}
                       </span>
@@ -171,7 +190,10 @@ const ChatPage = () => {
         {selectedFriend ? (
           <div className="relative flex h-full flex-col">
             <div className="md:hidden flex items-center gap-2 border-b border-white/10 bg-slate-950/80 p-3">
-              <button onClick={() => setSelectedFriend(null)} className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200">
+              <button
+                onClick={() => setSelectedFriend(null)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </button>
@@ -183,7 +205,9 @@ const ChatPage = () => {
                   {selectedFriend.fullName?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-white">{selectedFriend.fullName || "User"}</h2>
+                  <h2 className="text-base font-semibold text-white">
+                    {selectedFriend.fullName || "User"}
+                  </h2>
                   <p className="text-[11px] text-emerald-300">Active now</p>
                 </div>
               </div>
@@ -220,7 +244,8 @@ const ChatPage = () => {
                   </span>
                 </h2>
                 <p className="text-sm leading-relaxed text-slate-400">
-                  Select a contact to begin a glow-rich, realtime conversation and experience the Aurora messaging flow.
+                  Select a contact to begin a glow-rich, realtime conversation and experience the
+                  Aurora messaging flow.
                 </p>
               </div>
 

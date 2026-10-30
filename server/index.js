@@ -72,7 +72,9 @@ app.use((err, req, res, next) => {
   // Handle Mongoose Validation Errors
   if (err.name === "ValidationError") {
     statusCode = 400;
-    message = Object.values(err.errors).map((e) => e.message).join(", ");
+    message = Object.values(err.errors)
+      .map((e) => e.message)
+      .join(", ");
   }
 
   // Handle Mongoose Duplicate Key Error (E11000)
@@ -107,14 +109,14 @@ const startServer = async () => {
     process.env.PORT = String(chosenPort);
 
     if (chosenPort !== preferredPort) {
-      console.warn(
-        `Port ${preferredPort} is busy. Starting GoChat on ${chosenPort} instead.`
-      );
+      console.warn(`Port ${preferredPort} is busy. Starting GoChat on ${chosenPort} instead.`);
     }
 
     server.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
-        console.error(`Port ${chosenPort} is still busy after checking. Please free the process and restart.`);
+        console.error(
+          `Port ${chosenPort} is still busy after checking. Please free the process and restart.`
+        );
       } else {
         console.error("Server error:", err);
       }

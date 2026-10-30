@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 let listenersAttached = false;
@@ -32,17 +31,12 @@ const attachListeners = () => {
   });
 
   mongoose.connection.on("error", (err) => {
-    console.error(
-      "MongoDB Atlas runtime connection error:",
-      err.message || err
-    );
+    console.error("MongoDB Atlas runtime connection error:", err.message || err);
   });
 };
 
 const connectDB = async () => {
-  const mongoUri = normalizeMongoUri(
-    process.env.MONGO_URI || process.env.MONGO_DB_URI
-  );
+  const mongoUri = normalizeMongoUri(process.env.MONGO_URI || process.env.MONGO_DB_URI);
 
   mongoose.set("strictQuery", false);
 
@@ -74,18 +68,14 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 10000,
     });
 
-    console.log(
-      `MongoDB Atlas Connected Successfully: ${conn.connection.host}`
-    );
+    console.log(`MongoDB Atlas Connected Successfully: ${conn.connection.host}`);
     console.log(`Database Name: ${conn.connection.name}`);
 
     attachListeners();
 
     return conn;
   } catch (error) {
-    console.error(
-      `MongoDB Atlas connection failed: ${error.message}`
-    );
+    console.error(`MongoDB Atlas connection failed: ${error.message}`);
 
     try {
       const { MongoMemoryServer } = await import("mongodb-memory-server");

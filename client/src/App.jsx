@@ -89,10 +89,7 @@ const AppRoutes = () => {
         }
       />
 
-      <Route
-        path="/contact"
-        element={<ContactPage />}
-      />
+      <Route path="/contact" element={<ContactPage />} />
 
       <Route
         path="/chatPage"

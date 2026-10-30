@@ -1,4 +1,4 @@
-import net from 'node:net';
+import net from "node:net";
 
 export const getPortCandidates = (preferredPort, maxAttempts = 20) => {
   const candidates = [];
@@ -11,14 +11,14 @@ export const getPortCandidates = (preferredPort, maxAttempts = 20) => {
 };
 
 export const isPortAvailable = async (port) => {
-  const hosts = ['127.0.0.1', '::1', '0.0.0.0'];
+  const hosts = ["127.0.0.1", "::1", "0.0.0.0"];
 
   for (const host of hosts) {
     const available = await new Promise((resolve) => {
       const tester = net.createServer();
 
-      tester.once('error', () => resolve(false));
-      tester.once('listening', () => {
+      tester.once("error", () => resolve(false));
+      tester.once("listening", () => {
         tester.close(() => resolve(true));
       });
 
