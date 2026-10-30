@@ -28,15 +28,3 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
-
-# Agent & workspace tooling
-.agent/
-.agents/
-.gemini/
-.gsd/
-adapters/
-scripts/
-GSD-STYLE.md
-PROJECT_RULES.md
-model_capabilities.yaml
-VERSION
