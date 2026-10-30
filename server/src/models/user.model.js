@@ -18,6 +18,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    profilePic: {
+      type: String,
+      default: "",
+    },
     google_id: {
       type: String,
       default: null,
@@ -41,5 +45,3 @@ const UserSchema = new mongoose.Schema(
 
 const User = mongoose.models.User || mongoose.models.user || mongoose.model("User", UserSchema);
 export default User;
-
-

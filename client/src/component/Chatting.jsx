@@ -176,8 +176,12 @@ const Chatting = ({ selectedFriend, currentUser }) => {
       <div className="nexus-chat-header">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="relative flex-shrink-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF007A] via-[#9B5DE5] to-[#00F0FF] text-base font-bold text-white shadow-lg shadow-[#ff007a]/20 sm:h-12 sm:w-12">
-              {selectedFriend.fullName?.charAt(0)?.toUpperCase() || "U"}
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF007A] via-[#9B5DE5] to-[#00F0FF] text-base font-bold text-white shadow-lg shadow-[#ff007a]/20 sm:h-12 sm:w-12 overflow-hidden">
+              {selectedFriend.profilePic ? (
+                <img src={selectedFriend.profilePic} alt={selectedFriend.fullName || "User"} className="h-full w-full object-cover" />
+              ) : (
+                selectedFriend.fullName?.charAt(0)?.toUpperCase() || "U"
+              )}
             </div>
             <span className={`presence-badge ${isSelectedOnline ? "online" : "offline"}`} />
           </div>

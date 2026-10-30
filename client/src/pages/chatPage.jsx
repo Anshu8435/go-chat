@@ -79,8 +79,12 @@ const ChatPage = () => {
 
             <div className="flex items-center gap-2">
               <Link to="/dashboard" className="profile-chip transition hover:border-cyan-400/40 hover:bg-cyan-400/10">
-                <div className="profile-avatar">
-                  {user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="h-3.5 w-3.5" />}
+                <div className="profile-avatar overflow-hidden">
+                  {user?.profilePic ? (
+                    <img src={user.profilePic} alt={user.fullName || "User"} className="h-full w-full object-cover" />
+                  ) : (
+                    user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="h-3.5 w-3.5" />
+                  )}
                 </div>
                 <span className="truncate">{user?.fullName?.split(" ")[0] || "User"}</span>
               </Link>
@@ -137,8 +141,12 @@ const ChatPage = () => {
                   {isSelected && <div className="contact-accent" />}
 
                   <div className="relative flex-shrink-0">
-                    <div className="contact-avatar gradient-sunset">
-                      {u.fullName?.charAt(0).toUpperCase() || "U"}
+                    <div className="contact-avatar gradient-sunset overflow-hidden">
+                      {u.profilePic ? (
+                        <img src={u.profilePic} alt={u.fullName || "User"} className="h-full w-full object-cover" />
+                      ) : (
+                        u.fullName?.charAt(0).toUpperCase() || "U"
+                      )}
                     </div>
                     <span className={`presence-badge ${isOnline ? "online" : "offline"}`} />
                   </div>

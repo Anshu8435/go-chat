@@ -34,7 +34,7 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-// Add request interceptor to attach token from localStorage
+// Add request interceptor to attach token from sessionStorage
 api.interceptors.request.use((config) => {
   const token = getSessionItem("token");
   if (token) {
@@ -129,12 +129,48 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  const forgotPassword = async (email, newPassword) => {
-    const response = await api.post("/auth/forgot-password", {
+  const sendLoginOtp = async (email) => {
+    const response = await api.post("/auth/send-login-otp", { email });
+    return response.data;
+  };
+
+  const verifyLoginOtp = async (email, otp) => {
+    const response = await api.post("/auth/verify-login-otp", { email, otp });
+    const { token: newToken, user: userData } = response.data;
+
+    setToken(newToken);
+    setUser(userData);
+
+    setSessionItem("token", newToken);
+    setSessionItem("user", JSON.stringify(userData));
+
+    return response.data;
+  };
+
+  const sendForgotPasswordOtp = async (email) => {
+    const response = await api.post("/auth/forgot-password/send-otp", { email });
+    return response.data;
+  };
+
+  const resetPasswordWithOtp = async (email, otp, newPassword) => {
+    const response = await api.post("/auth/forgot-password/reset", {
       email,
+      otp,
       newPassword,
     });
+    return response.data;
+  };
 
+  const forgotPassword = async (email, otpOrNewPassword, maybeNewPassword) => {
+    // If 3 arguments or 2nd is OTP, call reset with OTP
+    if (maybeNewPassword !== undefined) {
+      return resetPasswordWithOtp(email, otpOrNewPassword, maybeNewPassword);
+    }
+    // Fallback
+    const response = await api.post("/auth/forgot-password", {
+      email,
+      newPassword: otpOrNewPassword,
+    });
     return response.data;
   };
 
@@ -179,6 +215,10 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        sendLoginOtp,
+        verifyLoginOtp,
+        sendForgotPasswordOtp,
+        resetPasswordWithOtp,
         forgotPassword,
         updateProfile,
         changePassword,
