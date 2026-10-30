@@ -1,0 +1,11 @@
+{
+  "name": "go-chatapp",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix client run build",
+    "test": "npm --prefix server test",
+    "lint": "npm --prefix client run lint"
+  }
+}
+

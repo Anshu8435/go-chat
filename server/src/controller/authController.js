@@ -275,6 +275,58 @@ export const ResetPasswordWithOtp = async (req, res, next) => {
   }
 };
 
+export const ForgotPassword = async (req, res, next) => {
+  try {
+    const { email, newPassword, otp } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        message: "Email and new password are required.",
+      });
+    }
+
+    if (String(newPassword).length < 6) {
+      return res.status(400).json({
+        message: "New password must be at least 6 characters long.",
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (otp) {
+      const otpRecord = await Otp.findOne({
+        email: normalizedEmail,
+        otp: String(otp).trim(),
+        type: "forgot-password",
+      });
+
+      if (!otpRecord) {
+        return res.status(400).json({
+          message: "Invalid or expired OTP code. Please request a new code.",
+        });
+      }
+
+      await Otp.deleteMany({ email: normalizedEmail, type: "forgot-password" });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(String(newPassword), salt);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successful! You can now log in.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const LogoutrUser = (req, res) => {
   res.clearCookie("token");
   return res.status(200).json({ message: "Logged out successfully." });
