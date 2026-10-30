@@ -15,6 +15,7 @@ const formatUserResponse = (user) => ({
   email: user.email,
   phone: user.phone || "",
   profilePic: user.profilePic || "",
+  bio: user.bio || "",
   loginType: user.loginType,
 });
 

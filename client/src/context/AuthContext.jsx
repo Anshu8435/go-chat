@@ -1,48 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-const getApiBaseUrl = () => {
-  const host = typeof window !== "undefined" ? window.location.hostname : "";
-  const isLocalhost = host === "localhost" || host === "127.0.0.1";
-
-  const envUrl = import.meta.env.VITE_API_URL;
-
-  // Local development
-  if (isLocalhost) {
-    if (envUrl && envUrl.includes(":4501")) {
-      return envUrl.replace(":4501", ":4500");
-    }
-    return envUrl || "http://localhost:4500";
-  }
-
-  // Production deployment (e.g., Vercel)
-  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
-    return envUrl;
-  }
-
-  return "";
-};
-
-const API_BASE_URL = getApiBaseUrl();
-
-// Configure default axios instance
-export const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
-
-// Add request interceptor to attach token from sessionStorage
-api.interceptors.request.use((config) => {
-  const token = getSessionItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
+// ── Session storage helpers (defined BEFORE the axios instance so the
+//    request interceptor can safely reference them at call time) ──────────────
 const getSessionItem = (key) => {
   if (typeof window === "undefined") return null;
   try {
@@ -69,6 +29,50 @@ const removeSessionItem = (key) => {
     // Ignore storage quota/session issues
   }
 };
+
+// ── API base URL ─────────────────────────────────────────────────────────────
+const getApiBaseUrl = () => {
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
+  const isLocalhost = host === "localhost" || host === "127.0.0.1";
+
+  const envUrl = import.meta.env.VITE_API_URL;
+
+  // Local development
+  if (isLocalhost) {
+    if (envUrl && envUrl.includes(":4501")) {
+      return envUrl.replace(":4501", ":4500");
+    }
+    return envUrl || "http://localhost:4500";
+  }
+
+  // Production deployment (e.g., Vercel)
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl;
+  }
+
+  return "";
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// ── Axios instance ───────────────────────────────────────────────────────────
+// Configure default axios instance
+export const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+// Add request interceptor to attach token from sessionStorage
+api.interceptors.request.use((config) => {
+  const token = getSessionItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const AuthContext = createContext();
 

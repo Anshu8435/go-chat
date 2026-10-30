@@ -22,6 +22,11 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    bio: {
+      type: String,
+      default: "",
+      maxlength: [200, "Bio cannot exceed 200 characters"],
+    },
     google_id: {
       type: String,
       default: null,

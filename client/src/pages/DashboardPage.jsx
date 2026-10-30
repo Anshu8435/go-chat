@@ -15,6 +15,7 @@ import {
   Trash2,
   Upload,
   UserRound,
+  FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -29,6 +30,7 @@ const DashboardPage = () => {
     fullName: "",
     email: "",
     phone: "",
+    bio: "",
     profilePic: "",
   });
 
@@ -50,6 +52,7 @@ const DashboardPage = () => {
         fullName: user.fullName || "",
         email: user.email || "",
         phone: user.phone || "",
+        bio: user.bio || "",
         profilePic: user.profilePic || "",
       });
     }
@@ -142,6 +145,7 @@ const DashboardPage = () => {
         fullName: profileData.fullName,
         email: profileData.email,
         phone: profileData.phone,
+        bio: profileData.bio,
         profilePic: profileData.profilePic,
       });
       toast.success("Profile updated successfully!");
@@ -372,6 +376,29 @@ const DashboardPage = () => {
                   </div>
                 </label>
 
+                {/* BIO / STATUS */}
+                <label className="block space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-300">Bio / Status</span>
+                    <span className="text-xs text-slate-500">{profileData.bio.length}/200</span>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3">
+                    <PencilLine className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+                    <textarea
+                      value={profileData.bio}
+                      onChange={(e) =>
+                        setProfileData({ ...profileData, bio: e.target.value.slice(0, 200) })
+                      }
+                      rows={3}
+                      className="w-full resize-none bg-transparent text-white outline-none placeholder:text-slate-500 text-sm leading-relaxed"
+                      placeholder="Write a short bio or status message (e.g. 'Available', 'Building cool stuff 🚀')…"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Visible to your contacts in the chat sidebar.
+                  </p>
+                </label>
+
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <p className="text-sm text-slate-400">Save your profile details and photo to your account.</p>
                   <button
@@ -508,6 +535,15 @@ const DashboardPage = () => {
                     Active account
                   </p>
                 </div>
+
+                {(profileData.bio || user?.bio) && (
+                  <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                    <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Bio</p>
+                    <p className="mt-2 text-sm text-slate-300 leading-relaxed break-words">
+                      {profileData.bio || user.bio}
+                    </p>
+                  </div>
+                )}
               </div>
             </section>
 

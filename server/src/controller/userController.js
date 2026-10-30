@@ -19,7 +19,7 @@ export const getUsersForSidebar = async (req, res, next) => {
 
 export const updateUserProfile = async (req, res, next) => {
   try {
-    const { fullName, email, phone, profilePic } = req.body;
+    const { fullName, email, phone, profilePic, bio } = req.body;
 
     if (!fullName || !email) {
       return res.status(400).json({ message: "Full name and email are required." });
@@ -44,6 +44,7 @@ export const updateUserProfile = async (req, res, next) => {
     user.fullName = String(fullName).trim();
     user.email = normalizedEmail;
     user.phone = phone ? String(phone).trim() : "";
+    user.bio = bio !== undefined ? String(bio).trim().slice(0, 200) : (user.bio || "");
 
     if (profilePic !== undefined) {
       user.profilePic = String(profilePic);
@@ -57,6 +58,7 @@ export const updateUserProfile = async (req, res, next) => {
       email: user.email,
       phone: user.phone,
       profilePic: user.profilePic || "",
+      bio: user.bio || "",
       loginType: user.loginType,
     };
 
