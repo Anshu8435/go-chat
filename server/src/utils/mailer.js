@@ -30,8 +30,58 @@ const getCredentials = () => {
   };
 };
 
+/**
+ * Send email via Resend HTTP API (Port 443 - Never blocked by Render or cloud firewalls)
+ */
+const sendViaResend = async ({ apiKey, from, to, subject, html }) => {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey.trim()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: from || "GoChat <onboarding@resend.dev>",
+      to: [to],
+      subject,
+      html,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || `Resend HTTP error ${response.status}`);
+  }
+  return data;
+};
+
+/**
+ * Send email via Brevo HTTP API (Port 443)
+ */
+const sendViaBrevo = async ({ apiKey, fromEmail, fromName, to, subject, html }) => {
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey.trim(),
+      "Content-Type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { name: fromName || "GoChat", email: fromEmail },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || `Brevo HTTP error ${response.status}`);
+  }
+  return data;
+};
+
 export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
-  const { user, pass } = getCredentials();
   const isLogin = type === "login";
 
   const subject = isLogin
@@ -93,6 +143,43 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     </html>
   `;
 
+  // Strategy 1: Resend HTTP API (Port 443 - Bypasses all Render SMTP port blocks)
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey) {
+    try {
+      console.log(`[MAILER] Sending OTP to ${email} via Resend HTTP API (Port 443)...`);
+      return await sendViaResend({
+        apiKey: resendApiKey,
+        from: process.env.RESEND_FROM,
+        to: email.trim(),
+        subject,
+        html,
+      });
+    } catch (resendErr) {
+      console.warn("[MAILER] Resend API failed, falling back...", resendErr.message);
+    }
+  }
+
+  // Strategy 2: Brevo HTTP API (Port 443)
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  if (brevoApiKey) {
+    try {
+      console.log(`[MAILER] Sending OTP to ${email} via Brevo HTTP API (Port 443)...`);
+      return await sendViaBrevo({
+        apiKey: brevoApiKey,
+        fromEmail: process.env.EMAIL_USER || "anshugupta15029@gmail.com",
+        fromName: "GoChat",
+        to: email.trim(),
+        subject,
+        html,
+      });
+    } catch (brevoErr) {
+      console.warn("[MAILER] Brevo API failed, falling back...", brevoErr.message);
+    }
+  }
+
+  // Strategy 3: Fast-fail SMTP (Port 465 SSL)
+  const { user, pass } = getCredentials();
   const mailOptions = {
     from: `"GoChat" <${user}>`,
     to: email.trim(),
@@ -100,48 +187,23 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     html,
   };
 
-  // Strategy 1: Direct SSL on port 465 (safest and most reliable on cloud platforms like Render)
   try {
-    const transporter465 = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
       auth: { user, pass },
       tls: { rejectUnauthorized: false },
-      connectionTimeout: 12000,
-      greetingTimeout: 12000,
-      socketTimeout: 15000,
+      connectionTimeout: 4000,
+      greetingTimeout: 4000,
+      socketTimeout: 6000,
     });
-    return await transporter465.sendMail(mailOptions);
-  } catch (err465) {
-    console.warn("Direct port 465 SSL failed, trying service: 'gmail'...", err465.message);
-
-    // Strategy 2: service: "gmail"
-    try {
-      const transporterService = nodemailer.createTransport({
-        service: "gmail",
-        auth: { user, pass },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 12000,
-        greetingTimeout: 12000,
-        socketTimeout: 15000,
-      });
-      return await transporterService.sendMail(mailOptions);
-    } catch (errService) {
-      console.warn("Service 'gmail' failed, trying port 587 STARTTLS...", errService.message);
-
-      // Strategy 3: Port 587 STARTTLS
-      const transporter587 = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        auth: { user, pass },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 12000,
-        greetingTimeout: 12000,
-        socketTimeout: 15000,
-      });
-      return await transporter587.sendMail(mailOptions);
-    }
+    return await transporter.sendMail(mailOptions);
+  } catch (smtpErr) {
+    throw new Error(
+      smtpErr.message?.includes("timeout") || smtpErr.code === "ETIMEDOUT"
+        ? "SMTP port blocked by host firewall (Render Free Tier blocks outbound ports 25, 465, 587)"
+        : smtpErr.message
+    );
   }
 };

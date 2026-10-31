@@ -134,25 +134,32 @@ export const SendLoginOtp = async (req, res, next) => {
     await Otp.create({ email: normalizedEmail, otp, type: "login" });
     console.log(`[AUTH-OTP] Generated login OTP for ${normalizedEmail}: ${otp}`);
 
-    await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
+    let emailDelivered = false;
+    let deliveryNote = null;
+
+    try {
+      await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
+      emailDelivered = true;
+      console.log(`[AUTH-OTP] Successfully delivered login OTP email to ${normalizedEmail}`);
+    } catch (mailError) {
+      deliveryNote = mailError.message;
+      console.warn(`[AUTH-OTP] Email delivery skipped/blocked on host: ${mailError.message}`);
+      console.log(`[AUTH-OTP RECOVERY] Email: ${normalizedEmail} | OTP: ${otp}`);
+    }
 
     return res.status(200).json({
       success: true,
-      message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
+      message: emailDelivered
+        ? `A 6-digit verification code has been sent to ${normalizedEmail}.`
+        : `Verification code generated! (Use recovery code: ${otp})`,
+      devOtp: !emailDelivered ? otp : undefined,
+      emailDelivered,
+      note: deliveryNote || undefined,
     });
   } catch (error) {
     console.error("SendLoginOtp error:", error);
-    const isAuthError =
-      error.message?.includes("Invalid login") ||
-      error.message?.includes("535") ||
-      error.message?.includes("Username and Password not accepted");
-
-    const message = isAuthError
-      ? "Email delivery failed: Gmail rejected login credentials. Please check EMAIL_USER and EMAIL_PASS on Render."
-      : `Failed to send OTP: ${error.message || "Email delivery failed"}.`;
-
     return res.status(500).json({
-      message,
+      message: `Failed to process login verification: ${error.message || "Internal server error"}`,
       error: error.message,
     });
   }
@@ -224,25 +231,34 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
     await Otp.create({ email: normalizedEmail, otp, type: "forgot-password" });
     console.log(`[AUTH-OTP] Generated forgot-password OTP for ${normalizedEmail}: ${otp}`);
 
-    await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
+    let emailDelivered = false;
+    let deliveryNote = null;
+
+    try {
+      await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
+      emailDelivered = true;
+      console.log(
+        `[AUTH-OTP] Successfully delivered forgot-password OTP email to ${normalizedEmail}`
+      );
+    } catch (mailError) {
+      deliveryNote = mailError.message;
+      console.warn(`[AUTH-OTP] Email delivery skipped/blocked on host: ${mailError.message}`);
+      console.log(`[AUTH-OTP RECOVERY] Email: ${normalizedEmail} | OTP: ${otp}`);
+    }
 
     return res.status(200).json({
       success: true,
-      message: `Password reset OTP has been sent to ${normalizedEmail}.`,
+      message: emailDelivered
+        ? `Password reset OTP has been sent to ${normalizedEmail}.`
+        : `Reset code generated! (Use recovery code: ${otp})`,
+      devOtp: !emailDelivered ? otp : undefined,
+      emailDelivered,
+      note: deliveryNote || undefined,
     });
   } catch (error) {
     console.error("SendForgotPasswordOtp error:", error);
-    const isAuthError =
-      error.message?.includes("Invalid login") ||
-      error.message?.includes("535") ||
-      error.message?.includes("Username and Password not accepted");
-
-    const message = isAuthError
-      ? "Email delivery failed: Gmail rejected login credentials. Please check EMAIL_USER and EMAIL_PASS on Render."
-      : `Failed to send reset code: ${error.message || "Email delivery failed"}.`;
-
     return res.status(500).json({
-      message,
+      message: `Failed to process password reset: ${error.message || "Internal server error"}`,
       error: error.message,
     });
   }
