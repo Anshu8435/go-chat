@@ -333,7 +333,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
     >
       {/* Chat Header */}
       <div className="nexus-chat-header">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-3 flex-1 mr-2">
           {onBack && (
             <button
               type="button"
@@ -361,19 +361,19 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             <span className={`presence-badge ${isSelectedOnline ? "online" : "offline"}`} />
           </div>
 
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="truncate text-sm font-bold text-[var(--text-main)] sm:text-base">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <h2 className="truncate text-xs sm:text-base font-bold text-[var(--text-main)] leading-tight">
                 {selectedFriend.fullName || "User"}
               </h2>
             </div>
-            <p className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)]">
+            <p className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-medium text-[var(--text-muted)] leading-tight mt-0.5">
               <span
-                className={`h-2 w-2 rounded-full ${
+                className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full flex-shrink-0 ${
                   isSelectedOnline ? "bg-emerald-400 animate-pulse" : "bg-slate-500"
                 }`}
               />
-              {isSelectedOnline ? "Active now" : "Offline"}
+              <span className="whitespace-nowrap">{isSelectedOnline ? "Active now" : "Offline"}</span>
               {selectedFriend.bio && (
                 <span className="hidden sm:inline text-[var(--text-muted)] truncate max-w-[200px]">
                   • {selectedFriend.bio}
@@ -424,10 +424,10 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
         {/* Security Banner */}
-        <div className="mx-auto flex max-w-sm items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-center text-[11px] font-medium text-[var(--text-muted)] shadow-sm">
-          <Lock className="h-3.5 w-3.5 text-[var(--primary)] flex-shrink-0" />
+        <div className="mx-auto flex max-w-sm items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-2.5 py-1 sm:px-3 sm:py-1.5 text-center text-[10px] sm:text-[11px] font-medium text-[var(--text-muted)] shadow-sm">
+          <Lock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[var(--primary)] flex-shrink-0" />
           <span>Messages are end-to-end encrypted in transit.</span>
         </div>
 
@@ -472,7 +472,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
                 className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`relative max-w-[85%] sm:max-w-md rounded-2xl p-3 text-sm transition-all shadow-sm break-words ${
+                  className={`relative max-w-[88%] sm:max-w-[78%] md:max-w-md lg:max-w-lg rounded-2xl p-2.5 sm:p-3 text-xs sm:text-sm transition-all shadow-sm break-words ${
                     isMe ? "rounded-tr-sm chat-bubble-sent" : "rounded-tl-sm chat-bubble-received"
                   }`}
                 >
@@ -549,21 +549,21 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
 
       {/* Selected Attachment Preview Bar */}
       {selectedAttachment && (
-        <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between text-xs">
-          <div className="flex items-center gap-3 text-[var(--text-main)] min-w-0">
+        <div className="px-3 sm:px-4 py-2 border-t border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2.5 sm:gap-3 text-[var(--text-main)] min-w-0 flex-1 mr-2">
             {selectedAttachment.fileType === "image" ? (
               <img
                 src={selectedAttachment.previewUrl}
                 alt="Preview"
-                className="w-10 h-10 object-cover rounded-lg border border-[var(--border)] flex-shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 object-cover rounded-lg border border-[var(--border)] flex-shrink-0"
               />
             ) : (
-              <div className="p-2 rounded-lg bg-[var(--primary)]/20 text-[var(--primary)] flex-shrink-0">
-                <FileText className="h-5 w-5" />
+              <div className="p-1.5 sm:p-2 rounded-lg bg-[var(--primary)]/20 text-[var(--primary)] flex-shrink-0">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
             )}
-            <div className="min-w-0">
-              <span className="font-semibold truncate block max-w-xs">{selectedAttachment.fileName}</span>
+            <div className="min-w-0 flex-1">
+              <span className="font-semibold truncate block text-xs">{selectedAttachment.fileName}</span>
               <span className="text-[10px] text-[var(--text-muted)]">
                 {formatBytes(selectedAttachment.fileSize)}
               </span>
@@ -572,7 +572,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
           <button
             type="button"
             onClick={() => setSelectedAttachment(null)}
-            className="text-[var(--text-muted)] hover:text-red-400 p-1.5 rounded-lg transition"
+            className="text-[var(--text-muted)] hover:text-red-400 p-1.5 rounded-lg transition flex-shrink-0"
             title="Remove attachment"
           >
             <X className="h-4 w-4" />
@@ -610,17 +610,17 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             </button>
 
             {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-2 w-48 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-2xl backdrop-blur-xl z-30">
+              <div className="absolute bottom-full left-0 mb-2 w-44 sm:w-48 max-w-[calc(100vw-2.5rem)] rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-2xl backdrop-blur-xl z-30">
                 <button
                   type="button"
                   onClick={() => {
                     setShowAttachMenu(false);
                     imageInputRef.current?.click();
                   }}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
+                  className="flex w-full items-center gap-2 sm:gap-2.5 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
                 >
-                  <ImageIcon className="h-4 w-4 text-[var(--primary)]" />
-                  Image or Photo
+                  <ImageIcon className="h-4 w-4 text-[var(--primary)] flex-shrink-0" />
+                  <span className="truncate">Image or Photo</span>
                 </button>
                 <button
                   type="button"
@@ -628,10 +628,10 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
                     setShowAttachMenu(false);
                     fileInputRef.current?.click();
                   }}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
+                  className="flex w-full items-center gap-2 sm:gap-2.5 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition"
                 >
-                  <FileText className="h-4 w-4 text-[var(--secondary)]" />
-                  Document / File
+                  <FileText className="h-4 w-4 text-[var(--secondary)] flex-shrink-0" />
+                  <span className="truncate">Document / File</span>
                 </button>
               </div>
             )}
@@ -649,14 +649,14 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             </button>
 
             {showEmojiPicker && (
-              <div className="absolute bottom-full left-0 mb-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-3 shadow-2xl backdrop-blur-xl z-30">
+              <div className="absolute bottom-full left-0 sm:left-auto sm:right-0 mb-2 w-[calc(100vw-2.5rem)] max-w-[280px] rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-3 shadow-2xl backdrop-blur-xl z-30">
                 <div className="grid grid-cols-4 gap-2 text-xl">
                   {EMOJI_LIST.map((emoji) => (
                     <button
                       key={emoji}
                       type="button"
                       onClick={() => handleSelectEmoji(emoji)}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--bg-surface)] hover:scale-110 transition"
+                      className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl hover:bg-[var(--bg-surface)] hover:scale-110 transition"
                     >
                       {emoji}
                     </button>
@@ -697,10 +697,10 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
           >
-            <div className="relative w-full max-w-sm rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 text-center shadow-2xl">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl overflow-hidden shadow-xl border border-[var(--border)]">
+            <div className="relative w-full max-w-xs sm:max-w-sm max-h-[90dvh] overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-4 sm:p-6 text-center shadow-2xl">
+              <div className="mx-auto mb-3 sm:mb-4 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[var(--border)]">
                 {selectedFriend.profilePic ? (
                   <img
                     src={selectedFriend.profilePic}
@@ -708,56 +708,56 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-xl sm:text-2xl font-bold text-white">
                     {selectedFriend.fullName?.charAt(0)?.toUpperCase()}
                   </span>
                 )}
               </div>
 
-              <h3 className="text-lg font-bold text-[var(--text-main)]">
+              <h3 className="text-base sm:text-lg font-bold text-[var(--text-main)]">
                 {selectedFriend.fullName}
               </h3>
-              <p className="text-xs text-[var(--primary)] font-semibold mt-1">
+              <p className="text-[11px] sm:text-xs text-[var(--primary)] font-semibold mt-1">
                 {activeCallType === "video" ? "Secure Video Call" : "Secure Audio Call"} •{" "}
                 {formatTime(callDuration)}
               </p>
 
-              <div className="mt-8 flex items-center justify-center gap-4">
+              <div className="mt-6 sm:mt-8 flex items-center justify-center gap-3 sm:gap-4">
                 <button
                   type="button"
                   onClick={() => setIsMicMuted(!isMicMuted)}
-                  className={`h-12 w-12 rounded-2xl border border-[var(--border)] flex items-center justify-center transition ${
+                  className={`h-11 w-11 sm:h-12 sm:w-12 rounded-2xl border border-[var(--border)] flex items-center justify-center transition ${
                     isMicMuted
                       ? "bg-amber-500 text-white"
                       : "bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-card)]"
                   }`}
                   title={isMicMuted ? "Unmute" : "Mute"}
                 >
-                  {isMicMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                  {isMicMuted ? <MicOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
 
                 {activeCallType === "video" && (
                   <button
                     type="button"
                     onClick={() => setIsVideoOff(!isVideoOff)}
-                    className={`h-12 w-12 rounded-2xl border border-[var(--border)] flex items-center justify-center transition ${
+                    className={`h-11 w-11 sm:h-12 sm:w-12 rounded-2xl border border-[var(--border)] flex items-center justify-center transition ${
                       isVideoOff
                         ? "bg-amber-500 text-white"
                         : "bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-card)]"
                     }`}
                     title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
                   >
-                    {isVideoOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+                    {isVideoOff ? <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Video className="h-4 w-4 sm:h-5 sm:w-5" />}
                   </button>
                 )}
 
                 <button
                   type="button"
                   onClick={() => setActiveCallType(null)}
-                  className="h-12 w-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-600/30 hover:bg-red-700 transition"
+                  className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-600/30 hover:bg-red-700 transition"
                   title="End Call"
                 >
-                  <PhoneOff className="h-5 w-5" />
+                  <PhoneOff className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>

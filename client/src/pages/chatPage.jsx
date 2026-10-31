@@ -206,27 +206,27 @@ const ChatPage = () => {
       <aside className={`nexus-sidebar ${selectedFriend ? "hidden md:flex" : "flex"}`}>
         {/* Header */}
         <div className="nexus-sidebar-header">
-          <div className="flex items-center justify-between gap-2">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="nexus-brand-mark">
-                <MessageSquare className="h-5 w-5 text-white" />
+          <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+            <Link to="/" className="flex items-center gap-2 group min-w-0 flex-shrink">
+              <div className="nexus-brand-mark flex-shrink-0">
+                <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-base font-extrabold tracking-tight text-[var(--text-sidebar,var(--text-main))] font-heading leading-tight">
+              <div className="min-w-0">
+                <h1 className="text-sm sm:text-base font-extrabold tracking-tight truncate text-[var(--text-sidebar,var(--text-main))] font-heading leading-tight">
                   GoChat
                 </h1>
                 <span className="nexus-live-status">
                   <span className="nexus-status-dot" />
-                  Live Workspace
+                  <span className="truncate">Live</span>
                 </span>
               </div>
             </Link>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
               <ThemeQuickSwitch compact />
 
               <Link to="/dashboard" className="profile-chip" title="Profile & Settings">
-                <div className="profile-avatar overflow-hidden">
+                <div className="profile-avatar overflow-hidden flex-shrink-0">
                   {user?.profilePic ? (
                     <img
                       src={user.profilePic}
@@ -237,7 +237,7 @@ const ChatPage = () => {
                     user?.fullName?.charAt(0).toUpperCase() || <UserIcon className="h-3.5 w-3.5" />
                   )}
                 </div>
-                <span className="truncate max-w-[70px]">
+                <span className="truncate max-w-[60px] hidden sm:inline">
                   {user?.fullName?.split(" ")[0] || "User"}
                 </span>
               </Link>
@@ -246,10 +246,10 @@ const ChatPage = () => {
                 type="button"
                 onClick={handleLogout}
                 title="Sign out"
-                className="icon-button danger"
+                className="icon-button danger h-8 w-8 sm:h-9 sm:w-9 rounded-xl flex-shrink-0"
                 aria-label="Sign out"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
             </div>
           </div>
@@ -259,18 +259,18 @@ const ChatPage = () => {
             <Search className="h-4 w-4 text-zinc-500 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search contacts or direct messages..."
+              placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search contacts"
-              className="text-black placeholder:text-zinc-500 font-medium"
+              className="text-black placeholder:text-zinc-500 font-medium text-xs sm:text-sm"
               style={{ color: "#000000" }}
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="text-zinc-400 hover:text-black p-0.5"
+                className="text-zinc-400 hover:text-black p-0.5 flex-shrink-0"
                 title="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
@@ -279,11 +279,11 @@ const ChatPage = () => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-[var(--border)]">
+          <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-[var(--border)] overflow-x-auto no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab("all")}
-              className={`px-3 py-1 text-xs rounded-lg font-semibold transition ${
+              className={`px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs rounded-lg font-semibold transition whitespace-nowrap flex-shrink-0 ${
                 activeTab === "all"
                   ? "bg-[var(--primary)] text-white shadow-sm"
                   : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface)]"
@@ -294,19 +294,19 @@ const ChatPage = () => {
             <button
               type="button"
               onClick={() => setActiveTab("online")}
-              className={`px-3 py-1 text-xs rounded-lg font-semibold transition flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs rounded-lg font-semibold transition flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 ${
                 activeTab === "online"
                   ? "bg-[var(--primary)] text-white shadow-sm"
                   : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface)]"
               }`}
             >
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-400" />
               Online ({onlineCount})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("pinned")}
-              className={`px-3 py-1 text-xs rounded-lg font-semibold transition flex items-center gap-1 ${
+              className={`px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs rounded-lg font-semibold transition flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${
                 activeTab === "pinned"
                   ? "bg-[var(--primary)] text-white shadow-sm"
                   : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface)]"
@@ -461,27 +461,27 @@ const ChatPage = () => {
           </div>
         ) : (
           /* Empty State Welcome Screen */
-          <div className="empty-state-shell">
-            <div className="relative z-10 max-w-lg space-y-6 text-center px-4">
+          <div className="empty-state-shell overflow-y-auto">
+            <div className="relative z-10 max-w-lg space-y-4 sm:space-y-6 text-center px-4 py-6 my-auto">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.4 }}
-                className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-[var(--border)] shadow-2xl backdrop-blur-xl"
+                className="mx-auto flex h-16 w-16 sm:h-24 sm:w-24 items-center justify-center rounded-2xl sm:rounded-3xl border border-[var(--border)] shadow-2xl backdrop-blur-xl"
                 style={{
                   background: `linear-gradient(135deg, ${activeTheme.colors.primary}22, ${activeTheme.colors.secondary}22)`,
                   boxShadow: "0 10px 40px -10px var(--shadow-glow)",
                 }}
               >
-                <MessageSquare className="h-12 w-12 text-[var(--primary)]" />
+                <MessageSquare className="h-8 w-8 sm:h-12 sm:w-12 text-[var(--primary)]" />
               </motion.div>
 
               <div className="space-y-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[var(--primary)]">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[var(--primary)]">
                   <Sparkles className="h-3 w-3" />
                   Enterprise Messaging
                 </span>
-                <h2 className="text-3xl font-extrabold text-[var(--text-main)] font-heading">
+                <h2 className="text-xl sm:text-3xl font-extrabold text-[var(--text-main)] font-heading">
                   Welcome to GoChat,{" "}
                   <span
                     className="bg-clip-text text-transparent"
@@ -492,31 +492,31 @@ const ChatPage = () => {
                     {user?.fullName || "User"}
                   </span>
                 </h2>
-                <p className="text-sm leading-relaxed text-[var(--text-muted)] max-w-md mx-auto">
+                <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-muted)] max-w-md mx-auto">
                   Select a contact on the left to initiate a secure, encrypted real-time
                   conversation with zero latency.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2 text-left">
                 <div className="nexus-info-card">
-                  <ShieldCheck className="mb-2 h-5 w-5 text-emerald-400" />
+                  <ShieldCheck className="mb-1.5 sm:mb-2 h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
                   <p className="text-xs font-bold text-[var(--text-main)]">256-bit Encrypted</p>
-                  <p className="text-[11px] text-[var(--text-muted)]">Secure in-transit delivery</p>
+                  <p className="text-[10px] sm:text-[11px] text-[var(--text-muted)]">Secure in-transit delivery</p>
                 </div>
                 <div className="nexus-info-card">
-                  <Sparkles className="mb-2 h-5 w-5 text-[var(--primary)]" />
+                  <Sparkles className="mb-1.5 sm:mb-2 h-4 w-4 sm:h-5 sm:w-5 text-[var(--primary)]" />
                   <p className="text-xs font-bold text-[var(--text-main)]">
                     Seven Enterprise Themes
                   </p>
-                  <p className="text-[11px] text-[var(--text-muted)]">Fully synced UI styling</p>
+                  <p className="text-[10px] sm:text-[11px] text-[var(--text-muted)]">Fully synced UI styling</p>
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-1 sm:pt-2">
                 <Link
                   to="/settings"
-                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-2.5 text-xs font-bold text-[var(--primary)] hover:border-[var(--primary)] transition shadow-sm"
+                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-bold text-[var(--primary)] hover:border-[var(--primary)] transition shadow-sm"
                 >
                   <Palette className="h-4 w-4" />
                   Explore Theme Studio
