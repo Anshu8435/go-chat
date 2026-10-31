@@ -108,12 +108,7 @@ const Login = () => {
     try {
       setIsSendingOtp(true);
       const res = await sendLoginOtp(otpEmail);
-      if (res?.devOtp) {
-        setOtpCode(res.devOtp);
-        toast.success(`Verification code: ${res.devOtp}`, { duration: 6000 });
-      } else {
-        toast.success(res?.message || "OTP sent to your email!");
-      }
+      toast.success(res?.message || "Verification code sent to your Gmail!");
       setOtpStep("verify");
       setOtpTimer(60);
     } catch (err) {
@@ -162,12 +157,7 @@ const Login = () => {
     try {
       setFpIsSending(true);
       const res = await sendForgotPasswordOtp(fpEmail);
-      if (res?.devOtp) {
-        setFpOtp(res.devOtp);
-        toast.success(`Reset code: ${res.devOtp}`, { duration: 6000 });
-      } else {
-        toast.success(res?.message || "Reset OTP sent to your email!");
-      }
+      toast.success(res?.message || "Password reset code sent to your Gmail!");
       setFpStep(2);
       setFpTimer(60);
     } catch (err) {

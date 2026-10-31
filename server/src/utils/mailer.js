@@ -228,7 +228,10 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     console.log(`[MAILER] Email delivered to ${email} via Gmail Port 465 IPv4`);
     return result;
   } catch (smtp465Err) {
-    console.warn(`[MAILER] Port 465 IPv4 (${ipv4Host}) failed, trying port 587...`, smtp465Err.message);
+    console.warn(
+      `[MAILER] Port 465 IPv4 (${ipv4Host}) failed, trying port 587...`,
+      smtp465Err.message
+    );
 
     try {
       const transporter587 = nodemailer.createTransport({

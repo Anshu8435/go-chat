@@ -134,32 +134,16 @@ export const SendLoginOtp = async (req, res, next) => {
     await Otp.create({ email: normalizedEmail, otp, type: "login" });
     console.log(`[AUTH-OTP] Generated login OTP for ${normalizedEmail}: ${otp}`);
 
-    let emailDelivered = false;
-    let deliveryNote = null;
-
-    try {
-      await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
-      emailDelivered = true;
-      console.log(`[AUTH-OTP] Successfully delivered login OTP email to ${normalizedEmail}`);
-    } catch (mailError) {
-      deliveryNote = mailError.message;
-      console.warn(`[AUTH-OTP] Email delivery skipped/blocked on host: ${mailError.message}`);
-      console.log(`[AUTH-OTP RECOVERY] Email: ${normalizedEmail} | OTP: ${otp}`);
-    }
+    await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
 
     return res.status(200).json({
       success: true,
-      message: emailDelivered
-        ? `A 6-digit verification code has been sent to ${normalizedEmail}.`
-        : `Verification code generated! (Use recovery code: ${otp})`,
-      devOtp: !emailDelivered ? otp : undefined,
-      emailDelivered,
-      note: deliveryNote || undefined,
+      message: `A 6-digit verification code has been sent to your Gmail (${normalizedEmail}).`,
     });
   } catch (error) {
     console.error("SendLoginOtp error:", error);
     return res.status(500).json({
-      message: `Failed to process login verification: ${error.message || "Internal server error"}`,
+      message: error.message || "Failed to deliver OTP to your email. Please try again.",
       error: error.message,
     });
   }
@@ -231,34 +215,16 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
     await Otp.create({ email: normalizedEmail, otp, type: "forgot-password" });
     console.log(`[AUTH-OTP] Generated forgot-password OTP for ${normalizedEmail}: ${otp}`);
 
-    let emailDelivered = false;
-    let deliveryNote = null;
-
-    try {
-      await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
-      emailDelivered = true;
-      console.log(
-        `[AUTH-OTP] Successfully delivered forgot-password OTP email to ${normalizedEmail}`
-      );
-    } catch (mailError) {
-      deliveryNote = mailError.message;
-      console.warn(`[AUTH-OTP] Email delivery skipped/blocked on host: ${mailError.message}`);
-      console.log(`[AUTH-OTP RECOVERY] Email: ${normalizedEmail} | OTP: ${otp}`);
-    }
+    await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
 
     return res.status(200).json({
       success: true,
-      message: emailDelivered
-        ? `Password reset OTP has been sent to ${normalizedEmail}.`
-        : `Reset code generated! (Use recovery code: ${otp})`,
-      devOtp: !emailDelivered ? otp : undefined,
-      emailDelivered,
-      note: deliveryNote || undefined,
+      message: `Password reset code has been sent to your Gmail (${normalizedEmail}).`,
     });
   } catch (error) {
     console.error("SendForgotPasswordOtp error:", error);
     return res.status(500).json({
-      message: `Failed to process password reset: ${error.message || "Internal server error"}`,
+      message: error.message || "Failed to deliver reset code to your email. Please try again.",
       error: error.message,
     });
   }
