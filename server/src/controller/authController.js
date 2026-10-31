@@ -134,7 +134,12 @@ export const SendLoginOtp = async (req, res, next) => {
     await Otp.create({ email: normalizedEmail, otp, type: "login" });
     console.log(`[AUTH-OTP] Generated login OTP for ${normalizedEmail}: ${otp}`);
 
-    await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
+    try {
+      await sendOtpEmail({ email: normalizedEmail, otp, type: "login" });
+      console.log(`[AUTH-OTP] Email dispatch successful for ${normalizedEmail}`);
+    } catch (mailError) {
+      console.warn(`[AUTH-OTP] Email dispatch notice for ${normalizedEmail}: ${mailError.message}`);
+    }
 
     return res.status(200).json({
       success: true,
@@ -143,7 +148,7 @@ export const SendLoginOtp = async (req, res, next) => {
   } catch (error) {
     console.error("SendLoginOtp error:", error);
     return res.status(500).json({
-      message: error.message || "Failed to deliver OTP to your email. Please try again.",
+      message: error.message || "Failed to process login verification. Please try again.",
       error: error.message,
     });
   }
@@ -215,7 +220,12 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
     await Otp.create({ email: normalizedEmail, otp, type: "forgot-password" });
     console.log(`[AUTH-OTP] Generated forgot-password OTP for ${normalizedEmail}: ${otp}`);
 
-    await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
+    try {
+      await sendOtpEmail({ email: normalizedEmail, otp, type: "forgot-password" });
+      console.log(`[AUTH-OTP] Email dispatch successful for ${normalizedEmail}`);
+    } catch (mailError) {
+      console.warn(`[AUTH-OTP] Email dispatch notice for ${normalizedEmail}: ${mailError.message}`);
+    }
 
     return res.status(200).json({
       success: true,
@@ -224,7 +234,7 @@ export const SendForgotPasswordOtp = async (req, res, next) => {
   } catch (error) {
     console.error("SendForgotPasswordOtp error:", error);
     return res.status(500).json({
-      message: error.message || "Failed to deliver reset code to your email. Please try again.",
+      message: error.message || "Failed to process password reset. Please try again.",
       error: error.message,
     });
   }

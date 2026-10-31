@@ -26,7 +26,6 @@ const getCredentials = () => {
     process.env.MAIL_PASS ||
     "aaezvcoryxbqfeic";
 
-  // Google displays App Passwords in groups of 4 separated by spaces; remove all whitespace
   const pass = String(rawPass).replace(/\s+/g, "").trim();
 
   return {
@@ -36,7 +35,35 @@ const getCredentials = () => {
 };
 
 /**
- * Resolve smtp.gmail.com to an IPv4 address to prevent IPv6 ENETUNREACH errors on cloud hosts like Render
+ * Send email via Vercel Serverless Function HTTPS relay (Port 443)
+ * This connects to Gmail SMTP on Vercel where outbound ports 465/587 are allowed!
+ */
+const sendViaVercelRelay = async ({ email, otp, type }) => {
+  const vercelUrl =
+    process.env.VERCEL_APP_URL || process.env.FRONTEND_URL || "https://go-chat-jade.vercel.app";
+
+  const endpoint = `${vercelUrl.replace(/\/+$/, "")}/api/send-otp`;
+  console.log(`[MAILER] Calling Vercel email relay at ${endpoint} via Port 443 HTTPS...`);
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, otp, type }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.success) {
+    throw new Error(
+      data.error || data.message || `Vercel relay returned status ${response.status}`
+    );
+  }
+  return data;
+};
+
+/**
+ * Resolve smtp.gmail.com to IPv4
  */
 const resolveGmailIpv4 = async () => {
   try {
@@ -51,7 +78,7 @@ const resolveGmailIpv4 = async () => {
 };
 
 /**
- * Send email via Resend HTTP API (Port 443 - Never blocked by Render or cloud firewalls)
+ * Send email via Resend HTTP API (Port 443)
  */
 const sendViaResend = async ({ apiKey, from, to, subject, html }) => {
   const response = await fetch("https://api.resend.com/emails", {
@@ -71,32 +98,6 @@ const sendViaResend = async ({ apiKey, from, to, subject, html }) => {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.message || `Resend HTTP error ${response.status}`);
-  }
-  return data;
-};
-
-/**
- * Send email via Brevo HTTP API (Port 443)
- */
-const sendViaBrevo = async ({ apiKey, fromEmail, fromName, to, subject, html }) => {
-  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "api-key": apiKey.trim(),
-      "Content-Type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      sender: { name: fromName || "GoChat", email: fromEmail },
-      to: [{ email: to }],
-      subject,
-      htmlContent: html,
-    }),
-  });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.message || `Brevo HTTP error ${response.status}`);
   }
   return data;
 };
@@ -163,7 +164,19 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     </html>
   `;
 
-  // Strategy 1: Resend HTTP API (Port 443 - Bypasses all Render SMTP port blocks)
+  // Strategy 1: Vercel Serverless Function HTTPS Relay (Port 443 - Bypasses Render firewall completely)
+  try {
+    const relayResult = await sendViaVercelRelay({ email, otp, type });
+    console.log(`[MAILER] Email successfully sent to ${email} via Vercel HTTPS Relay`);
+    return relayResult;
+  } catch (relayErr) {
+    console.warn(
+      "[MAILER] Vercel relay attempt skipped/failed, trying direct transport...",
+      relayErr.message
+    );
+  }
+
+  // Strategy 2: Resend HTTP API (Port 443)
   const resendApiKey = process.env.RESEND_API_KEY;
   if (resendApiKey) {
     try {
@@ -180,25 +193,7 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     }
   }
 
-  // Strategy 2: Brevo HTTP API (Port 443)
-  const brevoApiKey = process.env.BREVO_API_KEY;
-  if (brevoApiKey) {
-    try {
-      console.log(`[MAILER] Sending OTP to ${email} via Brevo HTTP API (Port 443)...`);
-      return await sendViaBrevo({
-        apiKey: brevoApiKey,
-        fromEmail: process.env.EMAIL_USER || "anshugupta15029@gmail.com",
-        fromName: "GoChat",
-        to: email.trim(),
-        subject,
-        html,
-      });
-    } catch (brevoErr) {
-      console.warn("[MAILER] Brevo API failed, falling back...", brevoErr.message);
-    }
-  }
-
-  // Strategy 3: Fast-fail Direct IPv4 SMTP (Port 465 SSL or Port 587 STARTTLS)
+  // Strategy 3: Direct IPv4 SMTP (Works locally or on unblocked hosts)
   const { user, pass } = getCredentials();
   const mailOptions = {
     from: `"GoChat" <${user}>`,
@@ -208,7 +203,6 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
   };
 
   const ipv4Host = await resolveGmailIpv4();
-  console.log(`[MAILER] Connecting to Gmail SMTP via IPv4: ${ipv4Host}:465...`);
 
   try {
     const transporter465 = nodemailer.createTransport({
@@ -220,42 +214,19 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
         servername: "smtp.gmail.com",
         rejectUnauthorized: false,
       },
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 10000,
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
+      socketTimeout: 8000,
     });
     const result = await transporter465.sendMail(mailOptions);
     console.log(`[MAILER] Email delivered to ${email} via Gmail Port 465 IPv4`);
     return result;
   } catch (smtp465Err) {
-    console.warn(
-      `[MAILER] Port 465 IPv4 (${ipv4Host}) failed, trying port 587...`,
-      smtp465Err.message
+    console.warn(`[MAILER] Direct Port 465 IPv4 failed: ${smtp465Err.message}`);
+    throw new Error(
+      smtp465Err.message?.includes("timeout") || smtp465Err.code === "ETIMEDOUT"
+        ? "SMTP connection timed out. (Render cloud host blocked outbound SMTP ports; please deploy Vercel relay)."
+        : smtp465Err.message
     );
-
-    try {
-      const transporter587 = nodemailer.createTransport({
-        host: ipv4Host,
-        port: 587,
-        secure: false,
-        auth: { user, pass },
-        tls: {
-          servername: "smtp.gmail.com",
-          rejectUnauthorized: false,
-        },
-        connectionTimeout: 8000,
-        greetingTimeout: 8000,
-        socketTimeout: 10000,
-      });
-      const result = await transporter587.sendMail(mailOptions);
-      console.log(`[MAILER] Email delivered to ${email} via Gmail Port 587 IPv4`);
-      return result;
-    } catch (smtp587Err) {
-      throw new Error(
-        smtp587Err.message?.includes("timeout") || smtp587Err.code === "ETIMEDOUT"
-          ? "SMTP connection timed out. (Render cloud host blocked outbound SMTP ports; use RESEND_API_KEY for Port 443 HTTPS email)."
-          : smtp587Err.message
-      );
-    }
   }
 };
