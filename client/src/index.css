@@ -756,3 +756,37 @@ html[data-theme="ocean"] .contact-card.selected svg {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+
+/* ==========================================================================
+   ENTERPRISE RESPONSIVE ENHANCEMENTS
+   ========================================================================== */
+@media (max-width: 640px) {
+  .nexus-chat-header {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .message-composer-bar {
+    padding: 0.65rem 0.75rem;
+    padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
+  }
+
+  .contact-avatar {
+    height: 2.35rem;
+    width: 2.35rem;
+    font-size: 13px;
+  }
+
+  .chat-bubble-sent,
+  .chat-bubble-received {
+    max-width: 88% !important;
+    font-size: 0.8125rem;
+    padding: 0.65rem 0.85rem;
+  }
+}
+
+.chat-bubble-sent,
+.chat-bubble-received {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+

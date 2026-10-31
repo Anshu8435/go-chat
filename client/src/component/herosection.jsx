@@ -247,7 +247,7 @@ const Herosection = () => {
               <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-4 -left-4 border border-[var(--border)] bg-[var(--bg-card)] p-3 rounded-2xl shadow-xl backdrop-blur-xl flex items-center gap-2.5"
+                className="absolute -bottom-4 left-2 sm:-left-4 border border-[var(--border)] bg-[var(--bg-card)] p-3 rounded-2xl shadow-xl backdrop-blur-xl flex items-center gap-2.5"
               >
                 <div className="p-2 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)]">
                   <Zap className="w-4 h-4" />

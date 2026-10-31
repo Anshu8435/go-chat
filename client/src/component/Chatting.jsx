@@ -383,16 +383,16 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           {/* Audio Call */}
           <button
             type="button"
             onClick={() => setActiveCallType("audio")}
             title="Start Voice Call"
-            className="icon-button"
+            className="icon-button h-8 w-8 sm:h-9 sm:w-9 rounded-xl"
             aria-label="Start Voice Call"
           >
-            <Phone className="h-4 w-4" />
+            <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
 
           {/* Video Call */}
@@ -400,20 +400,22 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             type="button"
             onClick={() => setActiveCallType("video")}
             title="Start Video Call"
-            className="icon-button"
+            className="icon-button h-8 w-8 sm:h-9 sm:w-9 rounded-xl"
             aria-label="Start Video Call"
           >
-            <Video className="h-4 w-4" />
+            <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
 
           {/* Theme Switcher */}
-          <ThemeQuickSwitch compact />
+          <div className="hidden sm:block">
+            <ThemeQuickSwitch compact />
+          </div>
 
           {/* Full Studio link */}
           <Link
             to="/settings"
             title="Open Theme Studio"
-            className="icon-button"
+            className="hidden md:inline-flex icon-button h-8 w-8 sm:h-9 sm:w-9 rounded-xl"
             aria-label="Theme Studio"
           >
             <Palette className="h-4 w-4" />
@@ -470,7 +472,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
                 className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`relative max-w-[85%] sm:max-w-md rounded-2xl p-3 text-sm transition-all shadow-sm ${
+                  className={`relative max-w-[85%] sm:max-w-md rounded-2xl p-3 text-sm transition-all shadow-sm break-words ${
                     isMe ? "rounded-tr-sm chat-bubble-sent" : "rounded-tl-sm chat-bubble-received"
                   }`}
                 >
@@ -580,7 +582,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
 
       {/* Message Composer */}
       <div className="message-composer-bar">
-        <form onSubmit={handleSendMessage} className="relative flex items-center gap-2">
+        <form onSubmit={handleSendMessage} className="relative flex items-center gap-1.5 sm:gap-2">
           {/* Hidden file inputs */}
           <input
             type="file"
@@ -601,7 +603,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             <button
               type="button"
               onClick={() => setShowAttachMenu(!showAttachMenu)}
-              className="icon-button"
+              className="icon-button h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
               title="Attach File or Image"
             >
               <Paperclip className="h-4 w-4" />
@@ -640,7 +642,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="icon-button"
+              className="icon-button h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
               title="Add Emoji"
             >
               <Smile className="h-4 w-4" />
@@ -665,14 +667,14 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
           </div>
 
           {/* Input Field */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <input
               type="text"
               placeholder={`Message ${selectedFriend.fullName || "contact"}...`}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none transition shadow-inner"
+              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none transition shadow-inner"
             />
           </div>
 
@@ -680,7 +682,7 @@ const Chatting = ({ selectedFriend, currentUser, onBack }) => {
           <button
             type="submit"
             disabled={(!messageText.trim() && !selectedAttachment) || isSending}
-            className="theme-button-primary inline-flex h-10 w-10 items-center justify-center rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            className="theme-button-primary inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
             title="Send Message"
           >
             {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

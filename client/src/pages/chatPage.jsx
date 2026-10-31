@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
-  ArrowLeft,
   Palette,
   Pin,
   Settings,
@@ -453,29 +452,12 @@ const ChatPage = () => {
       {/* Main Chat Workspace */}
       <main className={`main-chat-panel ${!selectedFriend ? "hidden md:flex" : "flex"}`}>
         {selectedFriend ? (
-          <div className="relative flex h-full flex-col">
-            {/* Mobile Back Header */}
-            <div className="md:hidden flex items-center justify-between border-b border-[var(--border)] bg-[var(--header-bg)] p-3">
-              <button
-                type="button"
-                onClick={() => setSelectedFriend(null)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)]"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Contacts
-              </button>
-
-              <ThemeQuickSwitch compact />
-            </div>
-
-            {/* Chat Content */}
-            <div className="h-full overflow-hidden">
-              <Chatting
-                selectedFriend={selectedFriend}
-                currentUser={user}
-                onBack={() => setSelectedFriend(null)}
-              />
-            </div>
+          <div className="relative flex h-full w-full flex-col overflow-hidden">
+            <Chatting
+              selectedFriend={selectedFriend}
+              currentUser={user}
+              onBack={() => setSelectedFriend(null)}
+            />
           </div>
         ) : (
           /* Empty State Welcome Screen */

@@ -585,7 +585,7 @@ const Login = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
           >
-            <div className="relative w-full max-w-md rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 sm:p-8 shadow-2xl">
+            <div className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6 sm:p-8 shadow-2xl">
               <div className="flex items-center justify-between pb-4 border-b border-[var(--border)] mb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 rounded-xl bg-[var(--bg-surface)] text-[var(--primary)]">
