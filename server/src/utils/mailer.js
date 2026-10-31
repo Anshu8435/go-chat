@@ -36,6 +36,21 @@ const getCredentials = () => {
 };
 
 /**
+ * Resolve smtp.gmail.com to an IPv4 address to prevent IPv6 ENETUNREACH errors on cloud hosts like Render
+ */
+const resolveGmailIpv4 = async () => {
+  try {
+    const addresses = await dns.promises.resolve4("smtp.gmail.com");
+    if (addresses && addresses.length > 0) {
+      return addresses[0];
+    }
+  } catch (err) {
+    console.warn("[DNS] resolve4 failed, using default IPv4 fallback:", err.message);
+  }
+  return "74.125.130.108";
+};
+
+/**
  * Send email via Resend HTTP API (Port 443 - Never blocked by Render or cloud firewalls)
  */
 const sendViaResend = async ({ apiKey, from, to, subject, html }) => {
@@ -183,7 +198,7 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     }
   }
 
-  // Strategy 3: Fast-fail SMTP with IPv4 forced (Port 465 SSL or Port 587 STARTTLS)
+  // Strategy 3: Fast-fail Direct IPv4 SMTP (Port 465 SSL or Port 587 STARTTLS)
   const { user, pass } = getCredentials();
   const mailOptions = {
     from: `"GoChat" <${user}>`,
@@ -192,41 +207,42 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     html,
   };
 
+  const ipv4Host = await resolveGmailIpv4();
+  console.log(`[MAILER] Connecting to Gmail SMTP via IPv4: ${ipv4Host}:465...`);
+
   try {
     const transporter465 = nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: ipv4Host,
       port: 465,
       secure: true,
-      family: 4,
       auth: { user, pass },
       tls: {
-        rejectUnauthorized: false,
         servername: "smtp.gmail.com",
+        rejectUnauthorized: false,
       },
-      connectionTimeout: 6000,
-      greetingTimeout: 6000,
-      socketTimeout: 8000,
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000,
     });
     const result = await transporter465.sendMail(mailOptions);
     console.log(`[MAILER] Email delivered to ${email} via Gmail Port 465 IPv4`);
     return result;
   } catch (smtp465Err) {
-    console.warn("[MAILER] Port 465 IPv4 failed, trying port 587...", smtp465Err.message);
+    console.warn(`[MAILER] Port 465 IPv4 (${ipv4Host}) failed, trying port 587...`, smtp465Err.message);
 
     try {
       const transporter587 = nodemailer.createTransport({
-        host: "smtp.gmail.com",
+        host: ipv4Host,
         port: 587,
         secure: false,
-        family: 4,
         auth: { user, pass },
         tls: {
-          rejectUnauthorized: false,
           servername: "smtp.gmail.com",
+          rejectUnauthorized: false,
         },
-        connectionTimeout: 6000,
-        greetingTimeout: 6000,
-        socketTimeout: 8000,
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
       });
       const result = await transporter587.sendMail(mailOptions);
       console.log(`[MAILER] Email delivered to ${email} via Gmail Port 587 IPv4`);
@@ -234,7 +250,7 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     } catch (smtp587Err) {
       throw new Error(
         smtp587Err.message?.includes("timeout") || smtp587Err.code === "ETIMEDOUT"
-          ? "SMTP connection timed out. (Render firewall blocked outbound SMTP ports; use RESEND_API_KEY on Render for HTTP delivery)."
+          ? "SMTP connection timed out. (Render cloud host blocked outbound SMTP ports; use RESEND_API_KEY for Port 443 HTTPS email)."
           : smtp587Err.message
       );
     }
