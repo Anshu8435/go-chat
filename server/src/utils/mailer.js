@@ -1,3 +1,8 @@
+import dns from "node:dns";
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 import nodemailer from "nodemailer";
 
 const getCredentials = () => {
@@ -178,7 +183,7 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
     }
   }
 
-  // Strategy 3: Fast-fail SMTP (Port 465 SSL)
+  // Strategy 3: Fast-fail SMTP with IPv4 forced (Port 465 SSL or Port 587 STARTTLS)
   const { user, pass } = getCredentials();
   const mailOptions = {
     from: `"GoChat" <${user}>`,
@@ -188,22 +193,50 @@ export const sendOtpEmail = async ({ email, otp, type = "login" }) => {
   };
 
   try {
-    const transporter = nodemailer.createTransport({
+    const transporter465 = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
+      family: 4,
       auth: { user, pass },
-      tls: { rejectUnauthorized: false },
-      connectionTimeout: 4000,
-      greetingTimeout: 4000,
-      socketTimeout: 6000,
+      tls: {
+        rejectUnauthorized: false,
+        servername: "smtp.gmail.com",
+      },
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
+      socketTimeout: 8000,
     });
-    return await transporter.sendMail(mailOptions);
-  } catch (smtpErr) {
-    throw new Error(
-      smtpErr.message?.includes("timeout") || smtpErr.code === "ETIMEDOUT"
-        ? "SMTP port blocked by host firewall (Render Free Tier blocks outbound ports 25, 465, 587)"
-        : smtpErr.message
-    );
+    const result = await transporter465.sendMail(mailOptions);
+    console.log(`[MAILER] Email delivered to ${email} via Gmail Port 465 IPv4`);
+    return result;
+  } catch (smtp465Err) {
+    console.warn("[MAILER] Port 465 IPv4 failed, trying port 587...", smtp465Err.message);
+
+    try {
+      const transporter587 = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        family: 4,
+        auth: { user, pass },
+        tls: {
+          rejectUnauthorized: false,
+          servername: "smtp.gmail.com",
+        },
+        connectionTimeout: 6000,
+        greetingTimeout: 6000,
+        socketTimeout: 8000,
+      });
+      const result = await transporter587.sendMail(mailOptions);
+      console.log(`[MAILER] Email delivered to ${email} via Gmail Port 587 IPv4`);
+      return result;
+    } catch (smtp587Err) {
+      throw new Error(
+        smtp587Err.message?.includes("timeout") || smtp587Err.code === "ETIMEDOUT"
+          ? "SMTP connection timed out. (Render firewall blocked outbound SMTP ports; use RESEND_API_KEY on Render for HTTP delivery)."
+          : smtp587Err.message
+      );
+    }
   }
 };
